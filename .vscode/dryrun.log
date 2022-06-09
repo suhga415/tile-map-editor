@@ -1,0 +1,5 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory `/Users/gahyunsuh/Desktop/game-dev/map-editor'
+g++ -std=c++17 -Wall -Wfatal-errors ./src/*.cpp ./src/Game/*.cpp ./src/Logger/*.cpp ./src/ECS/*.cpp ./src/AssetStore/*.cpp ./libs/imgui/*.cpp -I"./libs/" -I"/opt/homebrew/include/" -llua -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -o game;
+make: Leaving directory `/Users/gahyunsuh/Desktop/game-dev/map-editor'
+ 
