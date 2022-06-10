@@ -29,7 +29,7 @@ class RenderSystem: public System {
       for (auto entity: entities) {
         const auto transform = entity.getComponent<TransformComponent>();
         const auto sprite = entity.getComponent<SpriteComponent>();
-        
+
         SDL_Rect sourceRect = sprite.srcRect;
         SDL_Rect destinationRect = {
           static_cast<int>(transform.position.x),
@@ -37,16 +37,6 @@ class RenderSystem: public System {
           static_cast<int>(sprite.width * transform.scale.x),
           static_cast<int>(sprite.height * transform.scale.y)
         };
-
-        if (entity.hasComponent<CursorPosComponent>() && entity.hasComponent<SelectedTileComponent>()) {
-          // it's mouse cursor.
-          ImGuiIO& io = ImGui::GetIO();
-          if (!io.WantCaptureMouse) {
-            renderMouseCursor(entity, sourceRect, destinationRect);
-          } else {
-            continue;
-          }
-        }
 
       	SDL_RenderCopyEx(
           renderer,
@@ -58,26 +48,6 @@ class RenderSystem: public System {
           SDL_FLIP_NONE
         );
       }
-    }
-
-  private:
-    void renderMouseCursor(Entity& entity, SDL_Rect& sourceRect, SDL_Rect& destinationRect) {
-      const auto cursorPos = entity.getComponent<CursorPosComponent>();
-      const auto selectedTile = entity.getComponent<SelectedTileComponent>();
-      const int tileSize = selectedTile.tileSize * selectedTile.scale;
-
-      sourceRect = {
-        static_cast<int>(selectedTile.rowIdx * tileSize),
-        static_cast<int>(selectedTile.colIdx * tileSize),
-        static_cast<int>(tileSize),
-        static_cast<int>(tileSize)
-      };
-      destinationRect = {
-        static_cast<int>(cursorPos.position.x - tileSize / 2),
-        static_cast<int>(cursorPos.position.y - tileSize / 2),
-        static_cast<int>(tileSize),
-        static_cast<int>(tileSize)
-      };
     }
 };
 

@@ -6,6 +6,7 @@
 #include "../Components/SelectedTileComponent.h"
 #include "../EventBus/EventBus.h"
 #include "../Events/SelectedTileChangedEvent.h"
+#include "../Events/TileSetChangedEvent.h"
 #include "../Constants.h"
 
 class ChangeTileSystem: public System {
@@ -16,6 +17,7 @@ class ChangeTileSystem: public System {
 
     void subscribeToEvents(std::shared_ptr<EventBus>& eventBus) {
       eventBus->subscribeToEvent<SelectedTileChangedEvent>(this, &ChangeTileSystem::onTileChanged);
+      eventBus->subscribeToEvent<TileSetChangedEvent>(this, &ChangeTileSystem::onTileSetChanged);
     }
 
     void onTileChanged(SelectedTileChangedEvent& event) {
@@ -30,6 +32,14 @@ class ChangeTileSystem: public System {
           sprite.srcRect.x = event.rowIdx * selectedTile.tileSize * selectedTile.scale;
           sprite.srcRect.y = event.colIdx * selectedTile.tileSize * selectedTile.scale;
         }
+      }
+    }
+
+    void onTileSetChanged(TileSetChangedEvent& event) {
+      Logger::Info("TileSetChangedEvent!!!");
+      for (auto entity: getSystemEntities()) {
+        auto& selectedTile = entity.getComponent<SelectedTileComponent>();
+        selectedTile.assetId = event.assetId;
       }
     }
 };

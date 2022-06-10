@@ -28,6 +28,7 @@ class EditCanvasSystem: public System {
       this->eventBus = eventBus;
       eventBus->subscribeToEvent<MouseClickEvent>(this, &EditCanvasSystem::onMouseClicked);
       eventBus->subscribeToEvent<KeyPressedEvent>(this, &EditCanvasSystem::onSaveKeyPressed);
+      eventBus->subscribeToEvent<TileSetChangedEvent>(this, &EditCanvasSystem::onTileSetChanged);
     }
 
     void onMouseClicked(MouseClickEvent& event) {
@@ -59,7 +60,6 @@ class EditCanvasSystem: public System {
     void onSaveKeyPressed(KeyPressedEvent& event) {
       std::string keyCode = std::to_string(event.symbol);
       std::string keySymbol(1, event.symbol);
-      Logger::Info("Key pressed event emitted: " + std::to_string(keySymbol.compare("w")));
       if (keySymbol.compare("w") == 0) {
         for (auto entity: getSystemEntities()) {
           const auto canvas = entity.getComponent<CanvasComponent>();
@@ -68,11 +68,17 @@ class EditCanvasSystem: public System {
       }
     }
 
+    void onTileSetChanged(TileSetChangedEvent& event) {
+      for (auto entity: getSystemEntities()) {
+        auto& canvas = entity.getComponent<CanvasComponent>();
+        // Initialize the canvas...?
+      }
+    }
+
     // Render the canvas
     void update(SDL_Renderer* renderer, std::unique_ptr<AssetStore>& assetStore, SDL_Rect& camera) {
       for (auto entity: getSystemEntities()) {
         const auto canvas = entity.getComponent<CanvasComponent>();
-        const auto sprite = entity.getComponent<SpriteComponent>();
         const auto selectedTile = entity.getComponent<SelectedTileComponent>();
         for (int j = 0; j < canvas.tileNumY; j++) {
           for (int i = 0; i < canvas.tileNumX; i++) {
@@ -108,7 +114,7 @@ class EditCanvasSystem: public System {
 
               SDL_RenderCopyEx(
                 renderer,
-                assetStore->getTexture(sprite.assetId),
+                assetStore->getTexture(selectedTile.assetId),
                 &sourceRect,
                 &destinationRect,
                 0.0, // rotation

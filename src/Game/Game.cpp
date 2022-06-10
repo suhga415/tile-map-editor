@@ -14,6 +14,8 @@
 #include "../Systems/ChangeTileSystem.h"
 #include "../Systems/EditCanvasSystem.h"
 #include "../Systems/CursorMovementSystem.h"
+#include "../Systems/RenderCursorSystem.h"
+#include "../Utilities/CameraMovement.h"
 #include "../Events/KeyPressedEvent.h"
 #include <fstream>
 #include <glm/glm.hpp>
@@ -103,39 +105,35 @@ void Game::loadLevel(int level) {
   registry->addSystem<ChangeTileSystem>();
   registry->addSystem<EditCanvasSystem>();
   registry->addSystem<CursorMovementSystem>();
+  registry->addSystem<RenderCursorSystem>();
 
   // add textures
   assetStore->addTexture(renderer, "tank-image", "./assets/images/tank-panther-right.png");
   assetStore->addTexture(renderer, "truck-image", "./assets/images/truck-ford-right.png");
   assetStore->addTexture(renderer, "tilemap-image", "./assets/tilemaps/jungle.png");
+// field
+// ./assets/tilemaps/field.png
 
   // tileset (palette)
   Entity tileSet = registry->createEntity();
-  tileSet.addComponent<TileSetComponent>(32, 10, 3, 1.5);
-  tileSet.addComponent<SpriteComponent>("tilemap-image", 0, 32*10, 32*3);
+  tileSet.addComponent<TileSetComponent>("tilemap-image", 32, 10, 3, 1.5);
 
   // selected tile (mouse cursor)
   Entity selectedTile = registry->createEntity();
-  selectedTile.addComponent<TransformComponent>(glm::vec2(0, 0));
   selectedTile.addComponent<CursorPosComponent>(glm::vec2(0, 0));
-  selectedTile.addComponent<SpriteComponent>("tilemap-image", 9, 32, 32, 0, 0);
-  selectedTile.addComponent<SelectedTileComponent>(-1, -1, 32, 1);
+  selectedTile.addComponent<SelectedTileComponent>("tilemap-image", -1, -1, 32, 1);
 
   // canvas
   Entity canvasEntity = registry->createEntity();
-  canvasEntity.addComponent<CanvasComponent>(CANVAS_X, CANVAS_Y, 32, 5, 3, 2);
-  canvasEntity.addComponent<SpriteComponent>("tilemap-image", 0, 32, 32, 0, 0);
-  canvasEntity.addComponent<SelectedTileComponent>(-1, -1, 32, 1);
+  canvasEntity.addComponent<CanvasComponent>(CANVAS_X, CANVAS_Y, 32, 25, 23, 2);
+  canvasEntity.addComponent<SelectedTileComponent>("tilemap-image", -1, -1, 32, 1);
   canvas.x = CANVAS_X;
   canvas.y = CANVAS_Y;
-  canvas.w = 32 * 5 * 2; // tileSize * tilNumX * scale
-  canvas.h = 32 * 3 * 2; // tileSize * tilNumY * scale
+  canvas.w = 32 * 25 * 2; // tileSize * tilNumX * scale
+  canvas.h = 32 * 23 * 2; // tileSize * tilNumY * scale
 
   // load and draw a map of tiles
   // loadMap("./assets/tilemaps/jungle.map", 32, 25, 20, 2.0);
-
-  // tilemap
-  // loadTileSet(32, 10, 3, 1);
 }
 
 void Game::loadMap(std::string filePath, int tileSize, int mapNumCols, int mapNumRows, double tileScale) {
@@ -158,13 +156,6 @@ void Game::loadMap(std::string filePath, int tileSize, int mapNumCols, int mapNu
 		}
 	}
 	mapFile.close();
-}
-
-void Game::loadTileSet(int tileSize, int tileNumX, int tileNumY, float scale) {
-  Entity tileSet = registry->createEntity();
-  tileSet.addComponent<TransformComponent>(glm::vec2(TILESET_X, TILESET_Y), glm::vec2(1.0, 1.0), 0.0);
-  tileSet.addComponent<SpriteComponent>("tilemap-image", 0, tileSize*tileNumX*scale, tileSize*tileNumY*scale);
-  tileSet.addComponent<TileSetComponent>(tileSize, tileNumX, tileNumY, scale);
 }
 
 void Game::processInput() {
@@ -199,7 +190,7 @@ void Game::processInput() {
             eventBus->emitEvent<MouseClickEvent>(mouseX, mouseY, camera);
             break;
           case SDL_BUTTON_RIGHT:
-            rightMouseButtonDown = true;
+            rightMouseButtonDown = true; // to detect drag motion
             SDL_GetMouseState(&mouseX, &mouseY);
             break;
           default:
@@ -213,34 +204,7 @@ void Game::processInput() {
         break;
       case SDL_MOUSEMOTION:
         if (rightMouseButtonDown) {
-          camera.x += (mouseX - event.motion.x);
-          camera.y += (mouseY - event.motion.y);
-          if (camera.w >= canvas.w) { // canvas is smaller than camera
-            if (camera.x >= 0) {
-              camera.x = 0;
-            } else if (camera.x <= canvas.w - camera.w) {
-              camera.x = canvas.w - camera.w;
-            }
-          } else { // canvas is bigger than camera
-            if (camera.x <= 0) {
-              camera.x = 0;
-            } else if (camera.x + camera.w >= canvas.x + canvas.w) {
-              camera.x = canvas.x + canvas.w - camera.w;
-            }
-          }
-          if (camera.h >= canvas.h) {
-            if (camera.y >= 0) {
-              camera.y = 0;
-            } else if (camera.y <= canvas.h - camera.h) {
-              camera.y = canvas.h - camera.h;
-            }
-          } else {
-            if (camera.y <= 0) {
-              camera.y = 0;
-            } else if (camera.y + camera.h >= canvas.y + canvas.h) {
-              camera.y = canvas.y + canvas.h - camera.h;
-            }
-          }
+          CameraMovement::updateCamera(mouseX - event.motion.x, mouseY - event.motion.y, camera, canvas);
           SDL_GetMouseState(&mouseX, &mouseY);
         }
         break;
@@ -286,8 +250,9 @@ void Game::render() {
 
   // systems render
   registry->getSystem<EditCanvasSystem>().update(renderer, assetStore, camera);
-  registry->getSystem<TileSetGUISystem>().update(assetStore, eventBus);
+  registry->getSystem<TileSetGUISystem>().update(renderer, assetStore, eventBus);
   registry->getSystem<RenderSystem>().update(renderer, assetStore);
+  registry->getSystem<RenderCursorSystem>().update(renderer, assetStore);
 
 	SDL_RenderPresent(renderer); // swap the buffer
 }

@@ -20,7 +20,7 @@ class KeyboardControlSystem: public System {
     void onKeyPressed(KeyPressedEvent& event) {
       std::string keyCode = std::to_string(event.symbol);
       std::string keySymbol(1, event.symbol);
-      Logger::Info("Key pressed event emitted: [" + keyCode + "] " + keySymbol);
+      // Logger::Info("Key pressed event emitted: [" + keyCode + "] " + keySymbol);
 
     }
 

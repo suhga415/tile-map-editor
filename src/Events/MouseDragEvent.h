@@ -7,11 +7,16 @@
 
 class MouseDragEvent: public Event {
   public:
-    glm::vec2 location;
-    MouseDragEvent(glm::vec2 location): location(location) {}
-    MouseDragEvent(int x, int y) {
-      location.x = x;
-      location.y = y;
+    // mouse click-drag from right to left --> positive value (+)
+    glm::vec2 dragDist;
+    SDL_Rect camera;
+    SDL_Rect canvas;
+
+    MouseDragEvent(int x, int y, SDL_Rect& camera, SDL_Rect& canvas) {
+      dragDist.x = x;
+      dragDist.y = y;
+      this->camera = camera;
+      this->canvas = canvas;
     }
 
     ~MouseDragEvent() = default;

@@ -29,7 +29,6 @@ class Game {
     void run();
     void loadLevel(int level);
     void loadMap(std::string filePath, int tileSize, int mapSizeX, int mapSizeY, double tileScale);
-    void loadTileSet(int tileSize, int tileNumX, int tileNumY, float scale);
     void setup();
     void processInput();
     void update();
