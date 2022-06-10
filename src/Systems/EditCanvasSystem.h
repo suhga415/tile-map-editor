@@ -63,7 +63,8 @@ class EditCanvasSystem: public System {
       if (keySymbol.compare("w") == 0) {
         for (auto entity: getSystemEntities()) {
           const auto canvas = entity.getComponent<CanvasComponent>();
-          MapFileWriter::write(canvas, "./out.map");
+          const auto selectedTile = entity.getComponent<SelectedTileComponent>();
+          MapFileWriter::write(canvas, selectedTile, "./out.map");
         }
       }
     }
@@ -72,6 +73,13 @@ class EditCanvasSystem: public System {
       for (auto entity: getSystemEntities()) {
         auto& canvas = entity.getComponent<CanvasComponent>();
         // Initialize the canvas...?
+      }
+    }
+
+    void onCanvasPropertiesChanged() { // event coming from the Canvas GUI window
+      for (auto entity: getSystemEntities()) {
+        auto& canvas = entity.getComponent<CanvasComponent>();
+        // change properties
       }
     }
 

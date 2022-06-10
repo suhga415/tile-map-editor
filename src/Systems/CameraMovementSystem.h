@@ -1,11 +1,13 @@
-#ifndef CAMERAMOVEMENT_H
-#define CAMERAMOVEMENT_H
+#ifndef CAMERAMOVEMENTSYSTEM_H
+#define CAMERAMOVEMENTSYSTEM_H
 
-class CameraMovement {
+#include "../ECS/ECS.h"
+
+class CameraMovementSystem: public System {
   public:
-    CameraMovement() = default;
+    CameraMovementSystem() = default;
 
-    static void updateCamera(int dragDistX, int dragDistY, SDL_Rect& camera, SDL_Rect& canvas) {
+    static void update(int dragDistX, int dragDistY, SDL_Rect& camera, SDL_Rect& canvas) {
       camera.x += dragDistX;
       camera.y += dragDistY;
       // update camera x-position

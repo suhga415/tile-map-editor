@@ -15,7 +15,7 @@
 #include "../Systems/EditCanvasSystem.h"
 #include "../Systems/CursorMovementSystem.h"
 #include "../Systems/RenderCursorSystem.h"
-#include "../Utilities/CameraMovement.h"
+#include "../Systems/CameraMovementSystem.h"
 #include "../Events/KeyPressedEvent.h"
 #include <fstream>
 #include <glm/glm.hpp>
@@ -105,6 +105,7 @@ void Game::loadLevel(int level) {
   registry->addSystem<ChangeTileSystem>();
   registry->addSystem<EditCanvasSystem>();
   registry->addSystem<CursorMovementSystem>();
+  registry->addSystem<CameraMovementSystem>();
   registry->addSystem<RenderCursorSystem>();
 
   // add textures
@@ -204,7 +205,7 @@ void Game::processInput() {
         break;
       case SDL_MOUSEMOTION:
         if (rightMouseButtonDown) {
-          CameraMovement::updateCamera(mouseX - event.motion.x, mouseY - event.motion.y, camera, canvas);
+          registry->getSystem<CameraMovementSystem>().update(mouseX - event.motion.x, mouseY - event.motion.y, camera, canvas);
           SDL_GetMouseState(&mouseX, &mouseY);
         }
         break;
