@@ -8,6 +8,8 @@
 #include "../EventBus/EventBus.h"
 #include "../Events/MouseClickEvent.h"
 #include "../Events/KeyPressedEvent.h"
+#include "../Events/TileSetChangedEvent.h"
+#include "../Events/CanvasPropertiesChangedEvent.h"
 #include "../Utilities/MapFileWriter.h"
 #include "../Constants.h"
 #include <memory>
@@ -29,6 +31,7 @@ class EditCanvasSystem: public System {
       eventBus->subscribeToEvent<MouseClickEvent>(this, &EditCanvasSystem::onMouseClicked);
       eventBus->subscribeToEvent<KeyPressedEvent>(this, &EditCanvasSystem::onSaveKeyPressed);
       eventBus->subscribeToEvent<TileSetChangedEvent>(this, &EditCanvasSystem::onTileSetChanged);
+      eventBus->subscribeToEvent<CanvasPropertiesChangedEvent>(this, &EditCanvasSystem::onCanvasPropertiesChanged);
     }
 
     void onMouseClicked(MouseClickEvent& event) {
@@ -76,10 +79,13 @@ class EditCanvasSystem: public System {
       }
     }
 
-    void onCanvasPropertiesChanged() { // event coming from the Canvas GUI window
+    void onCanvasPropertiesChanged(CanvasPropertiesChangedEvent& event) {
       for (auto entity: getSystemEntities()) {
         auto& canvas = entity.getComponent<CanvasComponent>();
         // change properties
+        canvas.tileSize = event.tileSize;
+        canvas.tileNumX = event.tileNumX;
+        canvas.tileNumY = event.tileNumY;
       }
     }
 

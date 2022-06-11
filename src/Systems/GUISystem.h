@@ -1,11 +1,12 @@
-#ifndef TILESETGUISYSTEM_H
-#define TILESETGUISYSTEM_H
+#ifndef GUISYSTEM_H
+#define GUISYSTEM_H
 
 #include "../ECS/ECS.h"
 #include "../Components/TileSetComponent.h"
 #include "../EventBus/EventBus.h"
 #include "../Events/SelectedTileChangedEvent.h"
 #include "../Events/TileSetChangedEvent.h"
+#include "../Events/CanvasPropertiesChangedEvent.h"
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_sdl.h>
 #include <imgui/imgui_impl_sdlrenderer.h>
@@ -20,29 +21,134 @@ struct TileSet {
   float scale;
 };
 
-class TileSetGUISystem: public System {
+class GUISystem: public System {
   private:
-    std::map<std::string, TileSet*> loadedTileSets;
+    std::map<std::string, TileSet*> loadedTileSets; // <--- should be in a seperate component...
+    bool showNewCanvasWindow;
+    bool showOpenCanvasWindow;
+    bool showCanvasPropertiesWindow;
+    bool showTileSetWindow;
 
   public:
-    TileSetGUISystem() {
+    GUISystem() {
       requireComponent<TileSetComponent>();
       TileSet jungle = {32, 10, 3, 1.5};
       loadedTileSets.emplace("jungle-image", &jungle);
+      showNewCanvasWindow = false;
+      showOpenCanvasWindow = false;
+      showCanvasPropertiesWindow = false;
+      showTileSetWindow = false;
     }
 
     void update(SDL_Renderer* renderer, std::unique_ptr<AssetStore>& assetStore, std::shared_ptr<EventBus>& eventBus) {
       ImGui_ImplSDLRenderer_NewFrame();
       ImGui_ImplSDL2_NewFrame();
       ImGui::NewFrame();
-      ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
+
+      if (ImGui::BeginMainMenuBar()) {
+        if (ImGui::BeginMenu("Canvas")) {
+          ImGui::MenuItem("Create New", NULL, &showNewCanvasWindow); ImGui::Spacing();
+          ImGui::MenuItem("Open File", NULL, &showOpenCanvasWindow); ImGui::Spacing();
+          ImGui::MenuItem("Properties", NULL, &showCanvasPropertiesWindow); ImGui::Spacing();
+          ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Tile Set")) {
+          ImGui::MenuItem("Tile Set Window", NULL, &showTileSetWindow); ImGui::Spacing();
+          ImGui::EndMenu();
+        }
+		    ImGui::EndMainMenuBar();
+      }
       
-      // ImGui::ShowDemoWindow();
-      
+      if (showNewCanvasWindow) {
+        renderNewCanvasWindow(showNewCanvasWindow, renderer, assetStore, eventBus);
+      }
+
+      if (showOpenCanvasWindow) {
+        renderOpenCanvasWindow(showOpenCanvasWindow, renderer, assetStore, eventBus);
+      }
+
+      if (showCanvasPropertiesWindow) {
+        renderCanvasPropertiesWindow(showCanvasPropertiesWindow, renderer, assetStore, eventBus);
+      }
+
+      if (showTileSetWindow) {
+        renderTileSetWindow(showTileSetWindow, renderer, assetStore, eventBus);
+      }
+
+      ImGui::Render();
+      ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
+    }
+
+    void renderNewCanvasWindow(bool& open, SDL_Renderer* renderer, std::unique_ptr<AssetStore>& assetStore, std::shared_ptr<EventBus>& eventBus) {
+      auto entity = getSystemEntities()[0]; // singleton?
+
+      if (ImGui::Begin("Create Canvas", NULL, ImGuiWindowFlags_HorizontalScrollbar)) {
+        // Static variables to hold input values
+        static int tileSize = 0;
+        static int tileNumX = 0;
+        static int tileNumY = 0;
+
+        if (ImGui::CollapsingHeader("New Canvas", ImGuiTreeNodeFlags_DefaultOpen)) {
+          ImGui::InputInt("Tile size (square)", &tileSize);
+          ImGui::InputInt("The number of columns", &tileNumX);
+          ImGui::InputInt("The number of rows", &tileNumY);
+          if (ImGui::Button("Create")) {
+            eventBus->emitEvent<CanvasPropertiesChangedEvent>(tileSize, tileNumX, tileNumY);
+            tileSize = 0;
+            tileNumX = 0;
+            tileNumY = 0;
+            open = false;
+          }
+        }
+        ImGui::End();
+      }
+    }
+
+    void renderOpenCanvasWindow(bool& open, SDL_Renderer* renderer, std::unique_ptr<AssetStore>& assetStore, std::shared_ptr<EventBus>& eventBus) {
+      // Static variables to hold input values
+      static char mapFilePath[64] = "";
+
+      if (ImGui::CollapsingHeader("Open Canvas", ImGuiTreeNodeFlags_DefaultOpen)) {
+          ImGui::InputText("File Path", mapFilePath, 64);
+          if (ImGui::Button("Open")) {
+            std::string mapFilePathStr(mapFilePath);
+            mapFilePath[0] = '\0';
+            // eventBus->emitEvent<TileSetChangedEvent>(tileSetIdStr);
+            open = false;
+          }
+        }    
+    }
+
+    void renderCanvasPropertiesWindow(bool& open, SDL_Renderer* renderer, std::unique_ptr<AssetStore>& assetStore, std::shared_ptr<EventBus>& eventBus) {
+      auto entity = getSystemEntities()[0]; // singleton?
+
+      if (ImGui::Begin("Canvas", NULL, ImGuiWindowFlags_HorizontalScrollbar)) {
+        // Static variables to hold input values
+        static int tileSize = 0;
+        static int tileNumX = 0;
+        static int tileNumY = 0;
+
+        if (ImGui::CollapsingHeader("Edit Properties", ImGuiTreeNodeFlags_DefaultOpen)) {
+          ImGui::InputInt("Tile size (square)", &tileSize);
+          ImGui::InputInt("The number of columns", &tileNumX);
+          ImGui::InputInt("The number of rows", &tileNumY);
+          if (ImGui::Button("Apply")) {
+            // eventBus->emitEvent<CanvasPropertiesChangedEvent>(tileSize, tileNumX, tileNumY);
+            tileSize = 0;
+            tileNumX = 0;
+            tileNumY = 0;
+            open = false;
+          }
+        }
+        ImGui::End();
+      }
+    }
+
+    void renderTileSetWindow(bool& open, SDL_Renderer* renderer, std::unique_ptr<AssetStore>& assetStore, std::shared_ptr<EventBus>& eventBus) {
       auto entity = getSystemEntities()[0]; // singleton?
       auto& tileSet = entity.getComponent<TileSetComponent>();
 
-      if (ImGui::Begin("Tileset", NULL, window_flags)) {
+      if (ImGui::Begin("Tileset", NULL, ImGuiWindowFlags_HorizontalScrollbar)) {
         float width = tileSet.width * tileSet.scale;
         float height = tileSet.height * tileSet.scale;
         ImGui::Image(assetStore->getTexture(tileSet.assetId), ImVec2(width, height));
@@ -143,8 +249,6 @@ class TileSetGUISystem: public System {
         
         ImGui::End();
       }
-      ImGui::Render();
-      ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
     }
 
     void update0(std::unique_ptr<AssetStore>& assetStore) {

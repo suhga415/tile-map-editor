@@ -10,7 +10,7 @@
 #include "../Systems/MovementSystem.h"
 #include "../Systems/RenderSystem.h"
 #include "../Systems/KeyboardControlSystem.h"
-#include "../Systems/TileSetGUISystem.h"
+#include "../Systems/GUISystem.h"
 #include "../Systems/ChangeTileSystem.h"
 #include "../Systems/EditCanvasSystem.h"
 #include "../Systems/CursorMovementSystem.h"
@@ -101,7 +101,7 @@ void Game::loadLevel(int level) {
   registry->addSystem<MovementSystem>();
   registry->addSystem<RenderSystem>();
   registry->addSystem<KeyboardControlSystem>();
-  registry->addSystem<TileSetGUISystem>();
+  registry->addSystem<GUISystem>();
   registry->addSystem<ChangeTileSystem>();
   registry->addSystem<EditCanvasSystem>();
   registry->addSystem<CursorMovementSystem>();
@@ -115,9 +115,11 @@ void Game::loadLevel(int level) {
 // field
 // ./assets/tilemaps/field.png
 
-  // tileset (palette)
-  Entity tileSet = registry->createEntity();
-  tileSet.addComponent<TileSetComponent>("tilemap-image", 32, 10, 3, 1.5);
+  // tileset GUI (palette)
+  Entity gui = registry->createEntity();
+  gui.addComponent<TileSetComponent>("tilemap-image", 32, 10, 3, 1.5);
+  gui.addComponent<CanvasComponent>(CANVAS_X, CANVAS_Y, 0, 0, 0, 1);
+  // gui.addComponent<LoadedTileSetsComponent>();
 
   // selected tile (mouse cursor)
   Entity selectedTile = registry->createEntity();
@@ -126,12 +128,12 @@ void Game::loadLevel(int level) {
 
   // canvas
   Entity canvasEntity = registry->createEntity();
-  canvasEntity.addComponent<CanvasComponent>(CANVAS_X, CANVAS_Y, 32, 25, 23, 2);
+  canvasEntity.addComponent<CanvasComponent>(CANVAS_X, CANVAS_Y, 62, 20, 10, 1);
   canvasEntity.addComponent<SelectedTileComponent>("tilemap-image", -1, -1, 32, 1);
   canvas.x = CANVAS_X;
   canvas.y = CANVAS_Y;
-  canvas.w = 32 * 25 * 2; // tileSize * tilNumX * scale
-  canvas.h = 32 * 23 * 2; // tileSize * tilNumY * scale
+  canvas.w = 0;
+  canvas.h = 0;
 
   // load and draw a map of tiles
   // loadMap("./assets/tilemaps/jungle.map", 32, 25, 20, 2.0);
@@ -251,7 +253,7 @@ void Game::render() {
 
   // systems render
   registry->getSystem<EditCanvasSystem>().update(renderer, assetStore, camera);
-  registry->getSystem<TileSetGUISystem>().update(renderer, assetStore, eventBus);
+  registry->getSystem<GUISystem>().update(renderer, assetStore, eventBus);
   registry->getSystem<RenderSystem>().update(renderer, assetStore);
   registry->getSystem<RenderCursorSystem>().update(renderer, assetStore);
 
