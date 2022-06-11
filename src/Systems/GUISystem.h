@@ -6,6 +6,7 @@
 #include "../EventBus/EventBus.h"
 #include "../Events/SelectedTileChangedEvent.h"
 #include "../Events/TileSetChangedEvent.h"
+#include "../Events/CanvasCreatedEvent.h"
 #include "../Events/CanvasPropertiesChangedEvent.h"
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_sdl.h>
@@ -93,7 +94,7 @@ class GUISystem: public System {
           ImGui::InputInt("The number of columns", &tileNumX);
           ImGui::InputInt("The number of rows", &tileNumY);
           if (ImGui::Button("Create")) {
-            eventBus->emitEvent<CanvasPropertiesChangedEvent>(tileSize, tileNumX, tileNumY);
+            eventBus->emitEvent<CanvasCreatedEvent>(tileSize, tileNumX, tileNumY);
             tileSize = 0;
             tileNumX = 0;
             tileNumY = 0;
@@ -113,7 +114,7 @@ class GUISystem: public System {
           if (ImGui::Button("Open")) {
             std::string mapFilePathStr(mapFilePath);
             mapFilePath[0] = '\0';
-            // eventBus->emitEvent<TileSetChangedEvent>(tileSetIdStr);
+            // eventBus->emitEvent<CanvasCreatedEvent>(tileSize, tileNumX, tileNumY);
             open = false;
           }
         }    
@@ -133,7 +134,7 @@ class GUISystem: public System {
           ImGui::InputInt("The number of columns", &tileNumX);
           ImGui::InputInt("The number of rows", &tileNumY);
           if (ImGui::Button("Apply")) {
-            // eventBus->emitEvent<CanvasPropertiesChangedEvent>(tileSize, tileNumX, tileNumY);
+            eventBus->emitEvent<CanvasPropertiesChangedEvent>(tileSize, tileNumX, tileNumY);
             tileSize = 0;
             tileNumX = 0;
             tileNumY = 0;

@@ -1,6 +1,8 @@
 #ifndef CANVASCOMPONENT_H
 #define CANVASCOMPONENT_H
 
+#include "../Logger/Logger.h"
+
 struct Tile {
   // index from the (source) tileset
   int rowIdx;
@@ -30,11 +32,33 @@ struct CanvasComponent {
     this->tileNumX = tileNumX;
     this->tileNumY = tileNumY;
     this->scale = scale;
+    initialize();
+  }
+
+  void initialize() {
     for (int i = 0; i < tileNumX * tileNumY; i++) {
       Tile tile = {-1, -1};
       assignedTiles.push_back(tile);
     }
   }
+
+  void reassignTilesByNumChange(int prevNumX, int prevNumY) {
+    std::vector<Tile> newTiles;
+    for (int j = 0; j < tileNumY; j++) {
+      for (int i = 0; i < tileNumX; i++) {
+        if (i >= prevNumX || j >= prevNumY) {
+          Tile tile = {-1, -1};
+          newTiles.push_back(tile);
+        } else {
+          newTiles.push_back(assignedTiles[j * prevNumX + i]);
+        }
+      }
+    }
+    assignedTiles = newTiles;
+  }
+
+  // TODO: more options for canvs resizing
+
 };
 
 #endif

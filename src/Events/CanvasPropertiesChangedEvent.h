@@ -2,7 +2,6 @@
 #define CANVASPROPERTIESCHANGEDEVENT_H
 
 #include "../EventBus/Event.h"
-#include <SDL2/SDL.h>
 
 class CanvasPropertiesChangedEvent: public Event {
   public:

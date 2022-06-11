@@ -9,6 +9,7 @@
 #include "../Events/MouseClickEvent.h"
 #include "../Events/KeyPressedEvent.h"
 #include "../Events/TileSetChangedEvent.h"
+#include "../Events/CanvasCreatedEvent.h"
 #include "../Events/CanvasPropertiesChangedEvent.h"
 #include "../Utilities/MapFileWriter.h"
 #include "../Constants.h"
@@ -31,6 +32,7 @@ class EditCanvasSystem: public System {
       eventBus->subscribeToEvent<MouseClickEvent>(this, &EditCanvasSystem::onMouseClicked);
       eventBus->subscribeToEvent<KeyPressedEvent>(this, &EditCanvasSystem::onSaveKeyPressed);
       eventBus->subscribeToEvent<TileSetChangedEvent>(this, &EditCanvasSystem::onTileSetChanged);
+      eventBus->subscribeToEvent<CanvasCreatedEvent>(this, &EditCanvasSystem::onCanvasCreated);
       eventBus->subscribeToEvent<CanvasPropertiesChangedEvent>(this, &EditCanvasSystem::onCanvasPropertiesChanged);
     }
 
@@ -79,13 +81,25 @@ class EditCanvasSystem: public System {
       }
     }
 
-    void onCanvasPropertiesChanged(CanvasPropertiesChangedEvent& event) {
+    void onCanvasCreated(CanvasCreatedEvent& event) {
       for (auto entity: getSystemEntities()) {
         auto& canvas = entity.getComponent<CanvasComponent>();
-        // change properties
         canvas.tileSize = event.tileSize;
         canvas.tileNumX = event.tileNumX;
         canvas.tileNumY = event.tileNumY;
+        canvas.initialize();
+      }
+    }
+
+    void onCanvasPropertiesChanged(CanvasPropertiesChangedEvent& event) {
+      for (auto entity: getSystemEntities()) {
+        auto& canvas = entity.getComponent<CanvasComponent>();
+        int prevNumX = canvas.tileNumX;
+        int prevNumY = canvas.tileNumY;
+        canvas.tileSize = event.tileSize;
+        canvas.tileNumX = event.tileNumX;
+        canvas.tileNumY = event.tileNumY;
+        canvas.reassignTilesByNumChange(prevNumX, prevNumY);
       }
     }
 

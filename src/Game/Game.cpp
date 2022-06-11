@@ -128,7 +128,7 @@ void Game::loadLevel(int level) {
 
   // canvas
   Entity canvasEntity = registry->createEntity();
-  canvasEntity.addComponent<CanvasComponent>(CANVAS_X, CANVAS_Y, 62, 20, 10, 1);
+  canvasEntity.addComponent<CanvasComponent>(CANVAS_X, CANVAS_Y); // 62, 20, 10, 1
   canvasEntity.addComponent<SelectedTileComponent>("tilemap-image", -1, -1, 32, 1);
   canvas.x = CANVAS_X;
   canvas.y = CANVAS_Y;
