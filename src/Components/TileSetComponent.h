@@ -8,16 +8,16 @@ struct TileSetComponent {
   int tileSize;
   int tileNumX;
   int tileNumY;
+  float scale; // scale for GUI image
   int width;
   int height;
-  float scale; // scale for GUI image
 
   TileSetComponent (
     std::string assetId = "",
     int tileSize = 0,
-    int tileNumX = 0,
-    int tileNumY = 0,
-    float scale = 0
+    int tileNumX = 1,
+    int tileNumY = 1,
+    float scale = 1
   ) {
     this->assetId = assetId;
     this->tileSize = tileSize;

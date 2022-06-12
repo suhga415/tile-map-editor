@@ -3,6 +3,7 @@
 
 #include "../ECS/ECS.h"
 #include "../Components/TileSetComponent.h"
+#include "../Components/LoadedTileSetsComponent.h"
 #include "../EventBus/EventBus.h"
 #include "../Events/SelectedTileChangedEvent.h"
 #include "../Events/TileSetChangedEvent.h"
@@ -15,16 +16,8 @@
 #include <string>
 #include <vector>
 
-struct TileSet {
-  int tileSize;
-  int tileNumX;
-  int tileNumY;
-  float scale;
-};
-
 class GUISystem: public System {
   private:
-    std::map<std::string, TileSet*> loadedTileSets; // <--- should be in a seperate component...
     bool showNewCanvasWindow;
     bool showOpenCanvasWindow;
     bool showCanvasPropertiesWindow;
@@ -33,8 +26,8 @@ class GUISystem: public System {
   public:
     GUISystem() {
       requireComponent<TileSetComponent>();
+      requireComponent<LoadedTileSetsComponent>();
       TileSet jungle = {32, 10, 3, 1.5};
-      loadedTileSets.emplace("jungle-image", &jungle);
       showNewCanvasWindow = false;
       showOpenCanvasWindow = false;
       showCanvasPropertiesWindow = false;
@@ -114,6 +107,7 @@ class GUISystem: public System {
           if (ImGui::Button("Open")) {
             std::string mapFilePathStr(mapFilePath);
             mapFilePath[0] = '\0';
+            // TODO: emit Open Canvas Event
             // eventBus->emitEvent<CanvasCreatedEvent>(tileSize, tileNumX, tileNumY);
             open = false;
           }
@@ -148,6 +142,7 @@ class GUISystem: public System {
     void renderTileSetWindow(bool& open, SDL_Renderer* renderer, std::unique_ptr<AssetStore>& assetStore, std::shared_ptr<EventBus>& eventBus) {
       auto entity = getSystemEntities()[0]; // singleton?
       auto& tileSet = entity.getComponent<TileSetComponent>();
+      auto& loadedTileSets = entity.getComponent<LoadedTileSetsComponent>().tileSets;
 
       if (ImGui::Begin("Tileset", NULL, ImGuiWindowFlags_HorizontalScrollbar)) {
         float width = tileSet.width * tileSet.scale;
@@ -158,8 +153,8 @@ class GUISystem: public System {
         if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(0)) {
           int mouseX = ImGui::GetMousePos().x - ImGui::GetWindowPos().x + ImGui::GetScrollX() - 10; // a little offset
           int mouseY = ImGui::GetMousePos().y - ImGui::GetWindowPos().y + ImGui::GetScrollY() - 20 - 10; // (TITLE_BAR_SIZE + a little offset)
-          int row = mouseX / (static_cast<float>(tileSet.tileSize) * tileSet.scale);
-          int col = mouseY / (static_cast<float>(tileSet.tileSize) * tileSet.scale);
+          int row = mouseX / (static_cast<float>(tileSet.tileSize) * tileSet.scale); // x-dir index of selected tile
+          int col = mouseY / (static_cast<float>(tileSet.tileSize) * tileSet.scale); // y-dir index of selected tile
           Logger::Info("click** row = " + std::to_string(row) + ", col = " + std::to_string(col));
           // Emit event to change selected tile
           eventBus->emitEvent<SelectedTileChangedEvent>(row, col);
@@ -181,6 +176,7 @@ class GUISystem: public System {
             draw_list->AddLine(ImVec2(leftTop.x, leftTop.y + y), ImVec2(rightBottom.x, leftTop.y + y), IM_COL32(200, 200, 200, 60));
         draw_list->PopClipRect();
 
+        // Help Messages
         ImGui::Text("Click the tile to select");
         ImGui::Text("Save: Hit [w] | Pan: Mouse right click + Drag");
 
@@ -205,12 +201,17 @@ class GUISystem: public System {
         if (ImGui::CollapsingHeader("Load Tileset", ImGuiTreeNodeFlags_DefaultOpen)) {
           ImGui::Combo("Sprite", &selectedSpriteIndex, sprites, IM_ARRAYSIZE(sprites));      
           if (ImGui::Button("Load")) {
-            // tileSet.assetId = sprites[selectedSpriteIndex];
-            // tileSet.tileSize = loadedTileSets[tileSet.assetId].tileSize;
-            // tileSet.tileNumX = loadedTileSets[tileSet.assetId].tileNumX;
-            // tileSet.tileNumY = loadedTileSets[tileSet.assetId].tileNumY;
-            // tileSet.scale = loadedTileSets[tileSet.assetId].scale;
-            // eventBus->emitEvent<TileSetChangedEvent>(tileSet.assetId);
+            std::string tileSetIdStr(sprites[selectedSpriteIndex]);
+            tileSet.assetId = tileSetIdStr;
+            tileSet.tileSize = loadedTileSets[tileSetIdStr]->tileSize;
+            tileSet.tileNumX = loadedTileSets[tileSetIdStr]->tileNumX;
+            tileSet.tileNumY = loadedTileSets[tileSetIdStr]->tileNumY;
+            tileSet.scale = loadedTileSets[tileSetIdStr]->scale;
+            tileSet.width = tileSet.tileSize * tileSet.tileNumX;
+            tileSet.height = tileSet.tileSize * tileSet.tileNumY;
+            TileSet selectedTileSet(tileSet.tileSize, tileSet.tileNumX, tileSet.tileNumY, tileSet.scale);
+            eventBus->emitEvent<TileSetChangedEvent>(tileSetIdStr, selectedTileSet);
+            // TODO: canvas가 열려있다면, canvas의 scale, tileSize 바뀌어야. assignedTiles는 초기화되어야할지도..
           }
         }
 
@@ -230,24 +231,18 @@ class GUISystem: public System {
             // add new texture to sprites list and assetStore
             std::string tileSetIdStr(tileSetId);
             std::string textureFilePathStr(textureFilePath);
-            spritesV.push_back(tileSetIdStr);
-            Logger::Info("tile id: " + tileSetIdStr + ", file path: " + textureFilePath);
+            TileSet* newTileSet = new TileSet(tileSize, tileNumX, tileNumY, scale); // dynamic memory allocation
+            loadedTileSets.emplace(tileSetIdStr, newTileSet);
+            assetStore->addTexture(renderer, tileSetIdStr, textureFilePathStr);
             tileSetId[0] = '\0';
             textureFilePath[0] = '\0';
-            assetStore->addTexture(renderer, tileSetIdStr, textureFilePathStr);
-            tileSet.assetId = tileSetIdStr;
-            tileSet.tileSize = tileSize;
-            tileSet.tileNumX = tileNumX;
-            tileSet.tileNumY = tileNumY;
-            tileSet.scale = scale;
-            tileSet.width = tileSize * tileNumX;
-            tileSet.height = tileSize * tileNumY;
-            eventBus->emitEvent<TileSetChangedEvent>(tileSetIdStr);
-            // TODO: canvas에 있는 정보들도 바뀌어야 - scale 이랑 tileSize. assignedTiles는 초기화되어야할지도..
-            // TODO: add this new tile set to the loadedTileSets
+            tileSize = 0;
+            tileNumX = 0;
+            tileNumY = 0;
+            scale = 0;
           }
         }
-        
+
         ImGui::End();
       }
     }

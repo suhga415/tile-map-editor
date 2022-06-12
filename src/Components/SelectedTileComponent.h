@@ -5,8 +5,8 @@
 
 struct SelectedTileComponent {
   std::string assetId;
-  int rowIdx;
-  int colIdx;
+  int rowIdx; // x-dir index of selected tile
+  int colIdx; // y-dir index of selected tile
   int tileSize;
   int scale;
 

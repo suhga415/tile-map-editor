@@ -77,7 +77,7 @@ class EditCanvasSystem: public System {
     void onTileSetChanged(TileSetChangedEvent& event) {
       for (auto entity: getSystemEntities()) {
         auto& canvas = entity.getComponent<CanvasComponent>();
-        // Initialize the canvas...?
+        // TODO: Initialize the canvas...?
       }
     }
 

@@ -40,6 +40,8 @@ class ChangeTileSystem: public System {
       for (auto entity: getSystemEntities()) {
         auto& selectedTile = entity.getComponent<SelectedTileComponent>();
         selectedTile.assetId = event.assetId;
+        selectedTile.tileSize = event.selectedTileSet.tileSize;
+        selectedTile.scale = event.selectedTileSet.scale;
       }
     }
 };
