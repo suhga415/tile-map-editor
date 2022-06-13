@@ -112,9 +112,9 @@ void Game::loadLevel(int level) {
   // add textures
   assetStore->addTexture(renderer, "tank-image", "./assets/images/tank-panther-right.png");
   assetStore->addTexture(renderer, "truck-image", "./assets/images/truck-ford-right.png");
-  // assetStore->addTexture(renderer, "tilemap-image", "./assets/tilemaps/jungle.png");
-// field
-// ./assets/tilemaps/field.png
+  // Some textures for tile map
+  // ./assets/tilemaps/field.png
+  // ./assets/tilemaps/jungle.png
 
   // tileset GUI (palette)
   Entity gui = registry->createEntity();
@@ -134,31 +134,6 @@ void Game::loadLevel(int level) {
   canvas.y = CANVAS_Y;
   canvas.w = 0;
   canvas.h = 0;
-
-  // load and draw a map of tiles
-  // loadMap("./assets/tilemaps/jungle.map", 32, 25, 20, 2.0);
-}
-
-void Game::loadMap(std::string filePath, int tileSize, int mapNumCols, int mapNumRows, double tileScale) {
-	// Read the map tile definitions from the .map file
-	std::fstream mapFile;
-	mapFile.open(filePath);
-	char ch;
-	for (int y = 0; y < mapNumRows; y++) {
-		for (int x = 0; x < mapNumCols; x++) {
-			mapFile.get(ch);
-			int srcRectY = std::atoi(&ch) * tileSize;
-			mapFile.get(ch);
-			int srcRectX = std::atoi(&ch) * tileSize;
-			mapFile.ignore(); // ignore comma (,)
-			
-      // add new tile entity
-      Entity tile = registry->createEntity();
-      tile.addComponent<TransformComponent>(glm::vec2(x*tileSize*tileScale, y*tileSize*tileScale), glm::vec2(tileScale, tileScale), 0.0);
-      tile.addComponent<SpriteComponent>("tilemap-image", 0, tileSize, tileSize, srcRectX, srcRectY);
-		}
-	}
-	mapFile.close();
 }
 
 void Game::processInput() {

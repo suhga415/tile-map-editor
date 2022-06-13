@@ -10,6 +10,7 @@
 #include "../Events/KeyPressedEvent.h"
 #include "../Events/TileSetChangedEvent.h"
 #include "../Events/CanvasCreatedEvent.h"
+#include "../Events/CanvasOpenedEvent.h"
 #include "../Events/CanvasPropertiesChangedEvent.h"
 #include "../Utilities/MapFileWriter.h"
 #include "../Constants.h"
@@ -33,6 +34,7 @@ class EditCanvasSystem: public System {
       eventBus->subscribeToEvent<KeyPressedEvent>(this, &EditCanvasSystem::onSaveKeyPressed);
       eventBus->subscribeToEvent<TileSetChangedEvent>(this, &EditCanvasSystem::onTileSetChanged);
       eventBus->subscribeToEvent<CanvasCreatedEvent>(this, &EditCanvasSystem::onCanvasCreated);
+      eventBus->subscribeToEvent<CanvasOpenedEvent>(this, &EditCanvasSystem::onCanvasOpened);
       eventBus->subscribeToEvent<CanvasPropertiesChangedEvent>(this, &EditCanvasSystem::onCanvasPropertiesChanged);
     }
 
@@ -92,6 +94,21 @@ class EditCanvasSystem: public System {
         if (selectedTile.tileSize != 0) {
           canvas.scale = static_cast<float>(canvas.tileSize) / static_cast<float>(selectedTile.tileSize);
         }
+        canvas.initialize();
+      }
+    }
+
+    void onCanvasOpened(CanvasOpenedEvent& event) {
+      for (auto entity: getSystemEntities()) {
+        auto& canvas = entity.getComponent<CanvasComponent>();
+        auto& selectedTile = entity.getComponent<SelectedTileComponent>();
+        selectedTile.assetId = event.assetId;
+        canvas.tileSize = event.tileSize;
+        canvas.tileNumX = event.tileNumX;
+        canvas.tileNumY = event.tileNumY;
+        canvas.scale = event.scale;
+        canvas.assignedTiles = event.assignedTiles;
+        // selectedTile의 tile size???
         canvas.initialize();
       }
     }

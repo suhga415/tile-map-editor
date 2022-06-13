@@ -8,7 +8,10 @@
 #include "../Events/SelectedTileChangedEvent.h"
 #include "../Events/TileSetChangedEvent.h"
 #include "../Events/CanvasCreatedEvent.h"
+#include "../Events/CanvasOpenedEvent.h"
 #include "../Events/CanvasPropertiesChangedEvent.h"
+#include "../Utilities/MapFileLoader.h"
+#include "../Structs/Tile.h"
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_sdl.h>
 #include <imgui/imgui_impl_sdlrenderer.h>
@@ -105,8 +108,13 @@ class GUISystem: public System {
           if (ImGui::Button("Open")) {
             std::string mapFilePathStr(mapFilePath);
             mapFilePath[0] = '\0';
-            // TODO: emit Open Canvas Event
-            // eventBus->emitEvent<CanvasCreatedEvent>(tileSize, tileNumX, tileNumY);
+            // Load the file
+            std::string assetId;
+            int tileSize, tileNumX, tileNumY;
+            float scale;
+            std::vector<Tile> assignedTiles;
+            MapFileLoader::load(mapFilePathStr, assetId, tileSize, tileNumX, tileNumY, scale, assignedTiles);
+            eventBus->emitEvent<CanvasOpenedEvent>(assetId, tileSize, tileNumX, tileNumY, scale, assignedTiles);
             open = false;
           }
         }    
@@ -242,97 +250,6 @@ class GUISystem: public System {
         ImGui::End();
       }
     }
-
-    void update0(std::unique_ptr<AssetStore>& assetStore) {
-      bool show_another_window = false;
-
-      ImGui_ImplSDLRenderer_NewFrame();
-      ImGui_ImplSDL2_NewFrame();
-      ImGui::NewFrame();
-
-
-      // ImGui::ShowDemoWindow();
-      
-      ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
-
-      if (ImGui::Begin("Texture", NULL, window_flags)) {
-        // The image might be larger than the ImGui window, so we want to add the current scroll value to the 
-        // mouse position for the selected image 
-        auto scrollY = ImGui::GetScrollY();
-        auto scrollX = ImGui::GetScrollX();
-
-        // ImGui::BeginChild("child", ImVec2(300, 200), true, ImGuiWindowFlags_HorizontalScrollbar);
-
-        // Normalized coordinates of pixel (10,10) in a 320x96 texture.
-        // ImVec2 uv0 = ImVec2(10.0f/320.0f, 10.0f/96.0f);
-        // Normalized coordinates of pixel (110,60) in a 320x96 texture.
-        // ImVec2 uv1 = ImVec2((10.0f+100.0f)/320.0f, (10.0f+50.0f)/96.0f);        
-        // ImGui::Image(assetStore->getTexture("tilemap-image"), ImVec2(100.0f, 50.0f), uv0, uv1);
-
-        ImGui::Image(assetStore->getTexture("tilemap-image"), ImVec2(320, 96));
-
-        // int mousePosX = static_cast<int>(ImGui::GetMousePos().x - ImGui::GetWindowPos().x + scrollX);
-        // int mousePosY = static_cast<int>(ImGui::GetMousePos().y - ImGui::GetWindowPos().y - TITLE_BAR_SIZE + scrollY);
-        // int rows = imageHeight / (mouseRect.y * 2);
-        // int cols = imageWidth / (mouseRect.x * 2);
-
-        if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(0)) {
-          int mouseX = ImGui::GetMousePos().x - ImGui::GetWindowPos().x + scrollX;
-          int mouseY = ImGui::GetMousePos().y - ImGui::GetWindowPos().y + scrollY - 26; // TITLE_BAR_SIZE
-          int row = mouseX / (32 * 1);
-          int col = mouseY / (32 * 1);
-          Logger::Info("click** row = " + std::to_string(row) + ", col = " + std::to_string(col));
-
-          // change selected tile...
-          // eventBus->emitEvent<SelectedTileChangedEvent>(row, col);
-        }
-
-        // for (int i = 0; i < cols; i++) {
-        //   for (int j = 0; j < rows; j++) {
-        //     auto drawList = ImGui::GetWindowDrawList();
-        //     // Check to see if we are in the area of the desired 2D tile
-        //     if ((mousePosX >= (imageWidth / cols) * i && mousePosX <= (imageWidth / cols) + ((imageWidth / cols) * i))
-        //       && (mousePosY >= (imageHeight / rows) * j && mousePosY <= (imageHeight / rows) + ((imageHeight / rows) * j)))
-        //     {
-        //       if (ImGui::IsItemHovered()) {
-        //         if (ImGui::IsMouseClicked(0)) {
-        //           mSrcRectX = i * mouseRect.x;
-        //           mSrcRectY = j * mouseRect.y;
-        //         }
-        //       }
-        //     }
-        //   }
-        // }
-
-        // ImGui::EndChild();
-
-        ImGui::End();
-      }
-
-      // Display a small overlay window to display the map position using the mouse
-      if (show_another_window) {
-        if (ImGui::Begin("Test")) {
-          ImGui::Text("Hello! This is a new window.");
-        }
-        ImGui::End();
-
-        ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoNav;
-        ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_Always, ImVec2(0, 0));
-        ImGui::SetNextWindowBgAlpha(0.9f);
-        if (ImGui::Begin("Map coordinates", NULL, windowFlags)) {
-          ImGui::Text(
-            "Map coordinates (x=%.1f, y=%.1f)",
-            ImGui::GetIO().MousePos.x,
-            ImGui::GetIO().MousePos.y
-          );
-        }
-        ImGui::End();
-      }
-
-      ImGui::Render();
-      ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
-    }
-
 };
 
 #endif

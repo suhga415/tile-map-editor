@@ -2,12 +2,7 @@
 #define CANVASCOMPONENT_H
 
 #include "../Logger/Logger.h"
-
-struct Tile {
-  // index from the (source) tileset
-  int rowIdx; // x-dir index
-  int colIdx; // y-dir index
-};
+#include "../Structs/Tile.h"
 
 struct CanvasComponent {
   int locationX;

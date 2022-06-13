@@ -35,7 +35,6 @@ class ChangeTileSystem: public System {
         auto& selectedTile = entity.getComponent<SelectedTileComponent>();
         selectedTile.assetId = event.assetId;
         selectedTile.tileSize = event.selectedTileSet.tileSize;
-        Logger::Info(selectedTile.assetId + " " + std::to_string(selectedTile.tileSize));
         // selectedTile.scale = event.selectedTileSet.scale;
       }
     }
