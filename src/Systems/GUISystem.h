@@ -74,8 +74,6 @@ class GUISystem: public System {
     }
 
     void renderNewCanvasWindow(bool& open, SDL_Renderer* renderer, std::unique_ptr<AssetStore>& assetStore, std::shared_ptr<EventBus>& eventBus) {
-      auto entity = getSystemEntities()[0]; // singleton?
-
       if (ImGui::Begin("Create Canvas", NULL, ImGuiWindowFlags_HorizontalScrollbar)) {
         // Static variables to hold input values
         static int tileSize = 0;
@@ -115,8 +113,6 @@ class GUISystem: public System {
     }
 
     void renderCanvasPropertiesWindow(bool& open, SDL_Renderer* renderer, std::unique_ptr<AssetStore>& assetStore, std::shared_ptr<EventBus>& eventBus) {
-      auto entity = getSystemEntities()[0]; // singleton?
-
       if (ImGui::Begin("Canvas", NULL, ImGuiWindowFlags_HorizontalScrollbar)) {
         // Static variables to hold input values
         static int tileSize = 0;
@@ -199,7 +195,8 @@ class GUISystem: public System {
 
         // Section to select tileset
         if (ImGui::CollapsingHeader("Load Tileset", ImGuiTreeNodeFlags_DefaultOpen)) {
-          ImGui::Combo("Sprite", &selectedSpriteIndex, sprites, IM_ARRAYSIZE(sprites));      
+          ImGui::Combo("Sprite", &selectedSpriteIndex, sprites, IM_ARRAYSIZE(sprites));
+          ImGui::Text("*** WARNING: Changing the tile set will initialize the canvas!");
           if (ImGui::Button("Load")) {
             std::string tileSetIdStr(sprites[selectedSpriteIndex]);
             tileSet.assetId = tileSetIdStr;
@@ -211,7 +208,6 @@ class GUISystem: public System {
             tileSet.height = tileSet.tileSize * tileSet.tileNumY;
             TileSet selectedTileSet(tileSet.tileSize, tileSet.tileNumX, tileSet.tileNumY, tileSet.scale);
             eventBus->emitEvent<TileSetChangedEvent>(tileSetIdStr, selectedTileSet);
-            // TODO: canvas가 열려있다면, canvas의 scale, tileSize 바뀌어야. assignedTiles는 초기화되어야할지도..
           }
         }
 

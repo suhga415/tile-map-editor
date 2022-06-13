@@ -27,21 +27,16 @@ class ChangeTileSystem: public System {
         auto& selectedTile = entity.getComponent<SelectedTileComponent>();
         selectedTile.rowIdx = event.rowIdx;
         selectedTile.colIdx = event.colIdx;
-        if (entity.hasComponent<SpriteComponent>()) {
-          auto& sprite = entity.getComponent<SpriteComponent>();
-          sprite.srcRect.x = event.rowIdx * selectedTile.tileSize * selectedTile.scale;
-          sprite.srcRect.y = event.colIdx * selectedTile.tileSize * selectedTile.scale;
-        }
       }
     }
 
     void onTileSetChanged(TileSetChangedEvent& event) {
-      Logger::Info("TileSetChangedEvent!!!");
       for (auto entity: getSystemEntities()) {
         auto& selectedTile = entity.getComponent<SelectedTileComponent>();
         selectedTile.assetId = event.assetId;
         selectedTile.tileSize = event.selectedTileSet.tileSize;
-        selectedTile.scale = event.selectedTileSet.scale;
+        Logger::Info(selectedTile.assetId + " " + std::to_string(selectedTile.tileSize));
+        // selectedTile.scale = event.selectedTileSet.scale;
       }
     }
 };

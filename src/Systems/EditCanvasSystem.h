@@ -46,15 +46,15 @@ class EditCanvasSystem: public System {
         auto selectedTile = entity.getComponent<SelectedTileComponent>();
         bool withinCanvasX = true;
         bool withinCanvasY = true;
-        if (event.camera.w > canvas.tileSize * canvas.tileNumX * canvas.scale) { // if canvas (width) is smaller than camera view
-          withinCanvasX = (mouseX >= CANVAS_X - event.camera.x) && (mouseX <= CANVAS_X + canvas.tileSize * canvas.tileNumX * canvas.scale - event.camera.x);
+        if (event.camera.w > canvas.tileSize * canvas.tileNumX) { // if canvas (width) is smaller than camera view
+          withinCanvasX = (mouseX >= CANVAS_X - event.camera.x) && (mouseX <= CANVAS_X + canvas.tileSize * canvas.tileNumX - event.camera.x);
         }
-        if (event.camera.h > canvas.tileSize * canvas.tileNumY * canvas.scale) { // if canvas (height) is smaller than camera view
-          withinCanvasY = (mouseY >= CANVAS_Y - event.camera.y) && (mouseY <= CANVAS_Y + canvas.tileSize * canvas.tileNumY * canvas.scale - event.camera.y);
+        if (event.camera.h > canvas.tileSize * canvas.tileNumY) { // if canvas (height) is smaller than camera view
+          withinCanvasY = (mouseY >= CANVAS_Y - event.camera.y) && (mouseY <= CANVAS_Y + canvas.tileSize * canvas.tileNumY - event.camera.y);
         }
         if (withinCanvasX && withinCanvasY) {
-          int row = (mouseX - CANVAS_X + event.camera.x) / (canvas.tileSize * canvas.scale);
-          int col = (mouseY - CANVAS_Y + event.camera.y) / (canvas.tileSize * canvas.scale);
+          int row = (mouseX - CANVAS_X + event.camera.x) / (canvas.tileSize);
+          int col = (mouseY - CANVAS_Y + event.camera.y) / (canvas.tileSize);
           Logger::Info("[EditCanvasSystem] row = " + std::to_string(row) + ", col = " + std::to_string(col));
           canvas.assignedTiles[col * canvas.tileNumX + row].rowIdx = selectedTile.rowIdx;
           canvas.assignedTiles[col * canvas.tileNumX + row].colIdx = selectedTile.colIdx;
@@ -77,16 +77,21 @@ class EditCanvasSystem: public System {
     void onTileSetChanged(TileSetChangedEvent& event) {
       for (auto entity: getSystemEntities()) {
         auto& canvas = entity.getComponent<CanvasComponent>();
-        // TODO: Initialize the canvas...?
+        canvas.scale = static_cast<float>(canvas.tileSize) / static_cast<float>(event.selectedTileSet.tileSize);
+        canvas.initialize();
       }
     }
 
     void onCanvasCreated(CanvasCreatedEvent& event) {
       for (auto entity: getSystemEntities()) {
         auto& canvas = entity.getComponent<CanvasComponent>();
+        auto& selectedTile = entity.getComponent<SelectedTileComponent>();
         canvas.tileSize = event.tileSize;
         canvas.tileNumX = event.tileNumX;
         canvas.tileNumY = event.tileNumY;
+        if (selectedTile.tileSize != 0) {
+          canvas.scale = static_cast<float>(canvas.tileSize) / static_cast<float>(selectedTile.tileSize);
+        }
         canvas.initialize();
       }
     }
@@ -114,10 +119,10 @@ class EditCanvasSystem: public System {
             int sourceColIdx = canvas.assignedTiles[j * canvas.tileNumX + i].colIdx;
             if (sourceRowIdx == -1 && sourceColIdx == -1) {
               SDL_Rect emptyTile = {
-                static_cast<int>(canvas.locationX + i * canvas.tileSize * canvas.scale - camera.x),
-                static_cast<int>(canvas.locationY + j * canvas.tileSize * canvas.scale - camera.y),
-                static_cast<int>(canvas.tileSize * canvas.scale),
-                static_cast<int>(canvas.tileSize * canvas.scale)
+                static_cast<int>(canvas.locationX + i * canvas.tileSize - camera.x),
+                static_cast<int>(canvas.locationY + j * canvas.tileSize - camera.y),
+                static_cast<int>(canvas.tileSize),
+                static_cast<int>(canvas.tileSize)
               };
               if ((i + j)%2 == 0) {
                 SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255);
@@ -128,16 +133,16 @@ class EditCanvasSystem: public System {
             } else {
               // render the assigned tile
               SDL_Rect sourceRect = {
-                static_cast<int>(sourceRowIdx * selectedTile.tileSize * selectedTile.scale),
-                static_cast<int>(sourceColIdx * selectedTile.tileSize * selectedTile.scale),
-                static_cast<int>(selectedTile.tileSize * selectedTile.scale),
-                static_cast<int>(selectedTile.tileSize * selectedTile.scale)
+                static_cast<int>(sourceRowIdx * selectedTile.tileSize),
+                static_cast<int>(sourceColIdx * selectedTile.tileSize),
+                static_cast<int>(selectedTile.tileSize),
+                static_cast<int>(selectedTile.tileSize)
               };
               SDL_Rect destinationRect = {
-                static_cast<int>(canvas.locationX + i * canvas.tileSize * canvas.scale - camera.x),
-                static_cast<int>(canvas.locationY + j * canvas.tileSize * canvas.scale - camera.y),
-                static_cast<int>(canvas.tileSize * canvas.scale),
-                static_cast<int>(canvas.tileSize * canvas.scale)
+                static_cast<int>(canvas.locationX + i * canvas.tileSize - camera.x),
+                static_cast<int>(canvas.locationY + j * canvas.tileSize - camera.y),
+                static_cast<int>(canvas.tileSize),
+                static_cast<int>(canvas.tileSize)
               };
 
               SDL_RenderCopyEx(

@@ -112,7 +112,7 @@ void Game::loadLevel(int level) {
   // add textures
   assetStore->addTexture(renderer, "tank-image", "./assets/images/tank-panther-right.png");
   assetStore->addTexture(renderer, "truck-image", "./assets/images/truck-ford-right.png");
-  assetStore->addTexture(renderer, "tilemap-image", "./assets/tilemaps/jungle.png");
+  // assetStore->addTexture(renderer, "tilemap-image", "./assets/tilemaps/jungle.png");
 // field
 // ./assets/tilemaps/field.png
 
@@ -124,12 +124,12 @@ void Game::loadLevel(int level) {
   // selected tile (mouse cursor)
   Entity selectedTile = registry->createEntity();
   selectedTile.addComponent<CursorPosComponent>(glm::vec2(0, 0));
-  selectedTile.addComponent<SelectedTileComponent>("tilemap-image", -1, -1, 32, 1);
+  selectedTile.addComponent<SelectedTileComponent>();
 
   // canvas
   Entity canvasEntity = registry->createEntity();
   canvasEntity.addComponent<CanvasComponent>(CANVAS_X, CANVAS_Y); // 62, 20, 10, 1
-  canvasEntity.addComponent<SelectedTileComponent>("tilemap-image", -1, -1, 32, 1);
+  canvasEntity.addComponent<SelectedTileComponent>();
   canvas.x = CANVAS_X;
   canvas.y = CANVAS_Y;
   canvas.w = 0;
