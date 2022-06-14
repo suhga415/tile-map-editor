@@ -79,16 +79,19 @@ class GUISystem: public System {
     void renderNewCanvasWindow(bool& open, SDL_Renderer* renderer, std::unique_ptr<AssetStore>& assetStore, std::shared_ptr<EventBus>& eventBus) {
       if (ImGui::Begin("Create Canvas", NULL, ImGuiWindowFlags_HorizontalScrollbar)) {
         // Static variables to hold input values
+        static char filePath[64] = "";
         static int tileSize = 0;
         static int tileNumX = 0;
         static int tileNumY = 0;
 
         if (ImGui::CollapsingHeader("New Canvas", ImGuiTreeNodeFlags_DefaultOpen)) {
+          ImGui::InputText("New File Name", filePath, 64);
           ImGui::InputInt("Tile size (square)", &tileSize);
           ImGui::InputInt("The number of columns", &tileNumX);
           ImGui::InputInt("The number of rows", &tileNumY);
           if (ImGui::Button("Create")) {
-            eventBus->emitEvent<CanvasCreatedEvent>(tileSize, tileNumX, tileNumY);
+            std::string filePathStr(filePath);
+            eventBus->emitEvent<CanvasCreatedEvent>(filePathStr, tileSize, tileNumX, tileNumY);
             tileSize = 0;
             tileNumX = 0;
             tileNumY = 0;
@@ -104,20 +107,20 @@ class GUISystem: public System {
       static char mapFilePath[64] = "";
 
       if (ImGui::CollapsingHeader("Open Canvas", ImGuiTreeNodeFlags_DefaultOpen)) {
-          ImGui::InputText("File Path", mapFilePath, 64);
-          if (ImGui::Button("Open")) {
-            std::string mapFilePathStr(mapFilePath);
-            mapFilePath[0] = '\0';
-            // Load the file
-            std::string assetId;
-            int tileSize, tileNumX, tileNumY;
-            float scale;
-            std::vector<Tile> assignedTiles;
-            MapFileLoader::load(mapFilePathStr, assetId, tileSize, tileNumX, tileNumY, scale, assignedTiles);
-            eventBus->emitEvent<CanvasOpenedEvent>(assetId, tileSize, tileNumX, tileNumY, scale, assignedTiles);
-            open = false;
-          }
-        }    
+        ImGui::InputText("File Path", mapFilePath, 64);
+        if (ImGui::Button("Open")) {
+          std::string mapFilePathStr(mapFilePath);
+          mapFilePath[0] = '\0';
+          // Load the file
+          std::string assetId;
+          int tileSize, tileNumX, tileNumY;
+          float scale;
+          std::vector<Tile> assignedTiles;
+          MapFileLoader::load(mapFilePathStr, assetId, tileSize, tileNumX, tileNumY, scale, assignedTiles);
+          eventBus->emitEvent<CanvasOpenedEvent>(mapFilePathStr, assetId, tileSize, tileNumX, tileNumY, scale, assignedTiles);
+          open = false;
+        }
+      }
     }
 
     void renderCanvasPropertiesWindow(bool& open, SDL_Renderer* renderer, std::unique_ptr<AssetStore>& assetStore, std::shared_ptr<EventBus>& eventBus) {

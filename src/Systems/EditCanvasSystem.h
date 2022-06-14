@@ -114,7 +114,7 @@ class EditCanvasSystem: public System {
         for (auto entity: getSystemEntities()) {
           const auto canvas = entity.getComponent<CanvasComponent>();
           const auto selectedTile = entity.getComponent<SelectedTileComponent>();
-          MapFileWriter::write(canvas, selectedTile, "./out.map");
+          MapFileWriter::write(canvas, selectedTile, canvas.filePath);
         }
       }
     }
@@ -131,10 +131,11 @@ class EditCanvasSystem: public System {
       for (auto entity: getSystemEntities()) {
         auto& canvas = entity.getComponent<CanvasComponent>();
         auto& selectedTile = entity.getComponent<SelectedTileComponent>();
+        canvas.filePath = event.filePath;
         canvas.tileSize = event.tileSize;
         canvas.tileNumX = event.tileNumX;
         canvas.tileNumY = event.tileNumY;
-        if (selectedTile.tileSize != 0) {
+        if (selectedTile.tileSize != 0) { // if any tile set is currently loaded
           canvas.scale = static_cast<float>(canvas.tileSize) / static_cast<float>(selectedTile.tileSize);
         }
         canvas.initialize();
@@ -146,6 +147,7 @@ class EditCanvasSystem: public System {
         auto& canvas = entity.getComponent<CanvasComponent>();
         auto& selectedTile = entity.getComponent<SelectedTileComponent>();
         selectedTile.assetId = event.assetId;
+        canvas.filePath = event.filePath;
         canvas.tileSize = event.tileSize;
         canvas.tileNumX = event.tileNumX;
         canvas.tileNumY = event.tileNumY;

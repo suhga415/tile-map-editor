@@ -5,6 +5,7 @@
 #include "../Structs/Tile.h"
 
 struct CanvasComponent {
+  std::string filePath;
   int locationX;
   int locationY;
   int tileSize;
@@ -19,8 +20,10 @@ struct CanvasComponent {
     int tileSize = 0,
     int tileNumX = 1,
     int tileNumY = 1,
-    int scale = 1
+    int scale = 1,
+    std::string filePath = ""
   ) {
+    this->filePath = filePath;
     this->locationX = locationX;
     this->locationY = locationY;
     this->tileSize = tileSize;

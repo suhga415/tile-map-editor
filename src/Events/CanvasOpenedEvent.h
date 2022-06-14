@@ -8,6 +8,7 @@
 
 class CanvasOpenedEvent: public Event {
   public:
+    std::string filePath;
     std::string assetId;
     int tileSize;
     int tileNumX;
@@ -15,7 +16,8 @@ class CanvasOpenedEvent: public Event {
     float scale;
     std::vector<Tile> assignedTiles; // a 2d tile-index data
 
-    CanvasOpenedEvent(std::string assetId, int tileSize, int tileNumX, int tileNumY, float scale, std::vector<Tile> assignedTiles) {
+    CanvasOpenedEvent(std::string filePath, std::string assetId, int tileSize, int tileNumX, int tileNumY, float scale, std::vector<Tile> assignedTiles) {
+      this->filePath = filePath;
       this->assetId = assetId;
       this->tileSize = tileSize;
       this->tileNumX = tileNumX;
