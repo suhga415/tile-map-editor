@@ -31,6 +31,7 @@ struct CanvasComponent {
   }
 
   void initialize() {
+    assignedTiles.clear();
     for (int i = 0; i < tileNumX * tileNumY; i++) {
       Tile tile = {-1, -1};
       assignedTiles.push_back(tile);

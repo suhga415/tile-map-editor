@@ -7,6 +7,7 @@
 #include "../Components/SelectedTileComponent.h"
 #include "../EventBus/EventBus.h"
 #include "../Events/MouseClickEvent.h"
+#include "../Events/MouseDragEvent.h"
 #include "../Events/KeyPressedEvent.h"
 #include "../Events/TileSetChangedEvent.h"
 #include "../Events/CanvasCreatedEvent.h"
@@ -31,6 +32,7 @@ class EditCanvasSystem: public System {
     void subscribeToEvents(std::shared_ptr<EventBus>& eventBus) {
       this->eventBus = eventBus;
       eventBus->subscribeToEvent<MouseClickEvent>(this, &EditCanvasSystem::onMouseClicked);
+      eventBus->subscribeToEvent<MouseDragEvent>(this, &EditCanvasSystem::onMouseDrag);
       eventBus->subscribeToEvent<KeyPressedEvent>(this, &EditCanvasSystem::onSaveKeyPressed);
       eventBus->subscribeToEvent<TileSetChangedEvent>(this, &EditCanvasSystem::onTileSetChanged);
       eventBus->subscribeToEvent<CanvasCreatedEvent>(this, &EditCanvasSystem::onCanvasCreated);
@@ -48,18 +50,59 @@ class EditCanvasSystem: public System {
         auto selectedTile = entity.getComponent<SelectedTileComponent>();
         bool withinCanvasX = true;
         bool withinCanvasY = true;
-        if (event.camera.w > canvas.tileSize * canvas.tileNumX) { // if canvas (width) is smaller than camera view
-          withinCanvasX = (mouseX >= CANVAS_X - event.camera.x) && (mouseX <= CANVAS_X + canvas.tileSize * canvas.tileNumX - event.camera.x);
+        if (event.camera->w > canvas.tileSize * canvas.tileNumX) { // if canvas (width) is smaller than camera view
+          withinCanvasX = (mouseX >= canvas.locationX - event.camera->x) && (mouseX <= canvas.locationX + canvas.tileSize * canvas.tileNumX - event.camera->x);
         }
-        if (event.camera.h > canvas.tileSize * canvas.tileNumY) { // if canvas (height) is smaller than camera view
-          withinCanvasY = (mouseY >= CANVAS_Y - event.camera.y) && (mouseY <= CANVAS_Y + canvas.tileSize * canvas.tileNumY - event.camera.y);
+        if (event.camera->h > canvas.tileSize * canvas.tileNumY) { // if canvas (height) is smaller than camera view
+          withinCanvasY = (mouseY >= CANVAS_Y - event.camera->y) && (mouseY <= CANVAS_Y + canvas.tileSize * canvas.tileNumY - event.camera->y);
         }
         if (withinCanvasX && withinCanvasY) {
-          int row = (mouseX - CANVAS_X + event.camera.x) / (canvas.tileSize);
-          int col = (mouseY - CANVAS_Y + event.camera.y) / (canvas.tileSize);
+          int row = (mouseX - canvas.locationX + event.camera->x) / (canvas.tileSize);
+          int col = (mouseY - CANVAS_Y + event.camera->y) / (canvas.tileSize);
           Logger::Info("[EditCanvasSystem] row = " + std::to_string(row) + ", col = " + std::to_string(col));
           canvas.assignedTiles[col * canvas.tileNumX + row].rowIdx = selectedTile.rowIdx;
           canvas.assignedTiles[col * canvas.tileNumX + row].colIdx = selectedTile.colIdx;
+        }
+      }
+    }
+
+    void onMouseDrag(MouseDragEvent& event) {
+      auto entity = getSystemEntities()[0]; // singleton?
+      auto canvas = entity.getComponent<CanvasComponent>();
+      auto& camera = event.camera;
+      SDL_Rect canvasRect = {canvas.locationX, canvas.locationY, canvas.tileSize * canvas.tileNumX, canvas.tileSize * canvas.tileNumY};
+      cameraPan(event.dragDist.x, event.dragDist.y, camera, canvasRect);
+    }
+
+    void cameraPan(int dragDistX, int dragDistY, std::shared_ptr<SDL_Rect>& camera, SDL_Rect& canvas) {
+      camera->x += dragDistX;
+      camera->y += dragDistY;
+      // update camera x-position
+      if (camera->w >= canvas.w) { // the canvas is smaller than camera
+        if (camera->x >= 0) {
+          camera->x = 0;
+        } else if (camera->x <= canvas.w - camera->w) {
+          camera->x = canvas.w - camera->w;
+        }
+      } else { // the canvas is bigger than camera
+        if (camera->x <= 0) {
+          camera->x = 0;
+        } else if (camera->x + camera->w >= canvas.x + canvas.w) {
+          camera->x = canvas.x + canvas.w - camera->w;
+        }
+      }
+      // update camera y-position
+      if (camera->h >= canvas.h) {
+        if (camera->y >= 0) {
+          camera->y = 0;
+        } else if (camera->y <= canvas.h - camera->h) {
+          camera->y = canvas.h - camera->h;
+        }
+      } else {
+        if (camera->y <= 0) {
+          camera->y = 0;
+        } else if (camera->y + camera->h >= canvas.y + canvas.h) {
+          camera->y = canvas.y + canvas.h - camera->h;
         }
       }
     }
@@ -109,7 +152,6 @@ class EditCanvasSystem: public System {
         canvas.scale = event.scale;
         canvas.assignedTiles = event.assignedTiles;
         // selectedTile의 tile size???
-        canvas.initialize();
       }
     }
 
@@ -126,7 +168,7 @@ class EditCanvasSystem: public System {
     }
 
     // Render the canvas
-    void update(SDL_Renderer* renderer, std::unique_ptr<AssetStore>& assetStore, SDL_Rect& camera) {
+    void update(SDL_Renderer* renderer, std::unique_ptr<AssetStore>& assetStore, std::shared_ptr<SDL_Rect>& camera) {
       for (auto entity: getSystemEntities()) {
         const auto canvas = entity.getComponent<CanvasComponent>();
         const auto selectedTile = entity.getComponent<SelectedTileComponent>();
@@ -136,8 +178,8 @@ class EditCanvasSystem: public System {
             int sourceColIdx = canvas.assignedTiles[j * canvas.tileNumX + i].colIdx;
             if (sourceRowIdx == -1 && sourceColIdx == -1) {
               SDL_Rect emptyTile = {
-                static_cast<int>(canvas.locationX + i * canvas.tileSize - camera.x),
-                static_cast<int>(canvas.locationY + j * canvas.tileSize - camera.y),
+                static_cast<int>(canvas.locationX + i * canvas.tileSize - camera->x),
+                static_cast<int>(canvas.locationY + j * canvas.tileSize - camera->y),
                 static_cast<int>(canvas.tileSize),
                 static_cast<int>(canvas.tileSize)
               };
@@ -156,8 +198,8 @@ class EditCanvasSystem: public System {
                 static_cast<int>(selectedTile.tileSize)
               };
               SDL_Rect destinationRect = {
-                static_cast<int>(canvas.locationX + i * canvas.tileSize - camera.x),
-                static_cast<int>(canvas.locationY + j * canvas.tileSize - camera.y),
+                static_cast<int>(canvas.locationX + i * canvas.tileSize - camera->x),
+                static_cast<int>(canvas.locationY + j * canvas.tileSize - camera->y),
                 static_cast<int>(canvas.tileSize),
                 static_cast<int>(canvas.tileSize)
               };

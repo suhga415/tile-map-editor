@@ -16,8 +16,7 @@ class Game {
 		int ticksLastFrame;
     SDL_Window* window;
     SDL_Renderer* renderer;
-    SDL_Rect camera;
-    SDL_Rect canvas;
+    std::shared_ptr<SDL_Rect> camera;
     std::unique_ptr<Registry> registry;
     std::unique_ptr<AssetStore> assetStore;
     std::shared_ptr<EventBus> eventBus;

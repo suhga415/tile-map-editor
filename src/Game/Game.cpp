@@ -16,7 +16,6 @@
 #include "../Systems/EditCanvasSystem.h"
 #include "../Systems/CursorMovementSystem.h"
 #include "../Systems/RenderCursorSystem.h"
-#include "../Systems/CameraMovementSystem.h"
 #include "../Events/KeyPressedEvent.h"
 #include <fstream>
 #include <glm/glm.hpp>
@@ -26,6 +25,7 @@ Game::Game() {
   registry = std::make_unique<Registry>();
   assetStore = std::make_unique<AssetStore>();
   eventBus = std::make_shared<EventBus>();
+  camera = std::make_shared<SDL_Rect>();
   Logger::Info("Game constructor called.");
 }
 
@@ -75,10 +75,10 @@ void Game::initialize() {
   ImGui_ImplSDLRenderer_Init(renderer);
 
   // initialize the camera view with the screen area
-  camera.x = 0;
-  camera.y = 0;
-  camera.w = WINDOW_WIDTH;
-  camera.h = WINDOW_HEIGHT;
+  camera->x = 0;
+  camera->y = 0;
+  camera->w = WINDOW_WIDTH;
+  camera->h = WINDOW_HEIGHT - WINDOW_MENUBAR_HEIGHT;
   
   this->isRunning = true;
   return;
@@ -106,7 +106,6 @@ void Game::loadLevel(int level) {
   registry->addSystem<ChangeTileSystem>();
   registry->addSystem<EditCanvasSystem>();
   registry->addSystem<CursorMovementSystem>();
-  registry->addSystem<CameraMovementSystem>();
   registry->addSystem<RenderCursorSystem>();
 
   // add textures
@@ -130,10 +129,6 @@ void Game::loadLevel(int level) {
   Entity canvasEntity = registry->createEntity();
   canvasEntity.addComponent<CanvasComponent>(CANVAS_X, CANVAS_Y); // 62, 20, 10, 1
   canvasEntity.addComponent<SelectedTileComponent>();
-  canvas.x = CANVAS_X;
-  canvas.y = CANVAS_Y;
-  canvas.w = 0;
-  canvas.h = 0;
 }
 
 void Game::processInput() {
@@ -182,7 +177,7 @@ void Game::processInput() {
         break;
       case SDL_MOUSEMOTION:
         if (rightMouseButtonDown) {
-          registry->getSystem<CameraMovementSystem>().update(mouseX - event.motion.x, mouseY - event.motion.y, camera, canvas);
+          eventBus->emitEvent<MouseDragEvent>(mouseX - event.motion.x, mouseY - event.motion.y, camera);
           SDL_GetMouseState(&mouseX, &mouseY);
         }
         break;

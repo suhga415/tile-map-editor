@@ -8,10 +8,10 @@
 class MouseClickEvent: public Event {
   public:
     glm::vec2 location;
-    SDL_Rect camera;
+    std::shared_ptr<SDL_Rect> camera;
 
     MouseClickEvent(glm::vec2 location): location(location) {}
-    MouseClickEvent(int x, int y, SDL_Rect& camera) {
+    MouseClickEvent(int x, int y, std::shared_ptr<SDL_Rect>& camera) {
       location.x = x;
       location.y = y;
       this->camera = camera;

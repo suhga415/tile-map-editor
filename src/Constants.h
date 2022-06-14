@@ -5,12 +5,13 @@
 
 const unsigned int WINDOW_WIDTH = 1400;
 const unsigned int WINDOW_HEIGHT = 850;
+const unsigned int WINDOW_MENUBAR_HEIGHT = 20;
 
 const unsigned int FPS = 60;
 const unsigned int FRAME_TARGET_TIME = 1000 / FPS; // time[ms] per one frame transition
 
 const unsigned int CANVAS_X = 0;
-const unsigned int CANVAS_Y = 0;
+const unsigned int CANVAS_Y = 0 + WINDOW_MENUBAR_HEIGHT;
 
 const unsigned int TILESET_X = 50;
 const unsigned int TILESET_Y = 50;
