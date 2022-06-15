@@ -20,21 +20,20 @@ class RenderCursorSystem: public System {
       auto entity = getSystemEntities()[0]; // singleton
       const auto cursorPos = entity.getComponent<CursorPosComponent>();
       const auto selectedTile = entity.getComponent<SelectedTileComponent>();
-      const int tileSize = selectedTile.tileSize * selectedTile.scale;
 
       ImGuiIO& io = ImGui::GetIO();
       if (!io.WantCaptureMouse) {
         SDL_Rect sourceRect = {
-          static_cast<int>(selectedTile.rowIdx * tileSize),
-          static_cast<int>(selectedTile.colIdx * tileSize),
-          static_cast<int>(tileSize),
-          static_cast<int>(tileSize)
+          static_cast<int>(selectedTile.rowIdx * selectedTile.tileSize),
+          static_cast<int>(selectedTile.colIdx * selectedTile.tileSize),
+          static_cast<int>(selectedTile.tileSize),
+          static_cast<int>(selectedTile.tileSize)
         };
         SDL_Rect destinationRect = {
-          static_cast<int>(cursorPos.position.x - tileSize / 2),
-          static_cast<int>(cursorPos.position.y - tileSize / 2),
-          static_cast<int>(tileSize),
-          static_cast<int>(tileSize)
+          static_cast<int>(cursorPos.position.x),
+          static_cast<int>(cursorPos.position.y),
+          static_cast<int>(cursorPos.tileSize),
+          static_cast<int>(cursorPos.tileSize)
         };
         SDL_RenderCopyEx(
           renderer,

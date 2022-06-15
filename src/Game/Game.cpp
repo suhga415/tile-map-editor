@@ -122,7 +122,7 @@ void Game::loadLevel(int level) {
 
   // selected tile (mouse cursor)
   Entity selectedTile = registry->createEntity();
-  selectedTile.addComponent<CursorPosComponent>(glm::vec2(0, 0));
+  selectedTile.addComponent<CursorPosComponent>(glm::vec2(0, 0), 0, true);
   selectedTile.addComponent<SelectedTileComponent>();
 
   // canvas
@@ -204,6 +204,7 @@ void Game::update() {
   // systems subscribe to events (every frame)
   eventBus->resetSubscribers();
   registry->getSystem<KeyboardControlSystem>().subscribeToEvents(eventBus);
+  registry->getSystem<CursorMovementSystem>().subscribeToEvents(eventBus);
   registry->getSystem<ChangeTileSystem>().subscribeToEvents(eventBus);
   registry->getSystem<EditCanvasSystem>().subscribeToEvents(eventBus);
 
@@ -212,7 +213,7 @@ void Game::update() {
 
 	// systems update
   registry->getSystem<MovementSystem>().update(deltaTime);
-  registry->getSystem<CursorMovementSystem>().update(ImGui::GetMousePos().x, ImGui::GetMousePos().y);
+  registry->getSystem<CursorMovementSystem>().update(ImGui::GetMousePos().x, ImGui::GetMousePos().y, camera);
   // registry->getSystem<CollideSystem>().update(deltaTime);
 
 }

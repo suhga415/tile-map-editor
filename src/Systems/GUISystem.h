@@ -30,7 +30,6 @@ class GUISystem: public System {
     GUISystem() {
       requireComponent<TileSetComponent>();
       requireComponent<LoadedTileSetsComponent>();
-      TileSet jungle = {32, 10, 3, 1.5};
       showNewCanvasWindow = false;
       showOpenCanvasWindow = false;
       showCanvasPropertiesWindow = false;
@@ -162,7 +161,6 @@ class GUISystem: public System {
           int mouseY = ImGui::GetMousePos().y - ImGui::GetWindowPos().y + ImGui::GetScrollY() - 20 - 10; // (TITLE_BAR_SIZE + a little offset)
           int row = mouseX / (static_cast<float>(tileSet.tileSize) * tileSet.scale); // x-dir index of selected tile
           int col = mouseY / (static_cast<float>(tileSet.tileSize) * tileSet.scale); // y-dir index of selected tile
-          Logger::Info("click** row = " + std::to_string(row) + ", col = " + std::to_string(col));
           // Emit event to change selected tile
           eventBus->emitEvent<SelectedTileChangedEvent>(row, col);
         }

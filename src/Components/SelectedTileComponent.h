@@ -7,21 +7,18 @@ struct SelectedTileComponent {
   std::string assetId;
   int rowIdx; // x-dir index of selected tile
   int colIdx; // y-dir index of selected tile
-  int tileSize;
-  int scale;
+  int tileSize; // original size
 
   SelectedTileComponent (
     std::string assetId = "",
     int rowIdx = 0,
     int colIdx = 0,
-    int tileSize = 0,
-    int scale = 1
+    int tileSize = 0
   ) {
     this->assetId = assetId;
     this->rowIdx = rowIdx;
     this->colIdx = colIdx;
     this->tileSize = tileSize;
-    this->scale = scale;
   }
 };
 
