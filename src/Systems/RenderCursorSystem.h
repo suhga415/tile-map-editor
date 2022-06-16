@@ -2,7 +2,7 @@
 #define RENDERCURSORSYSTEM_H
 
 #include "../ECS/ECS.h"
-#include "../Components/CursorPosComponent.h"
+#include "../Components/CursorTileComponent.h"
 #include "../Components/SelectedTileComponent.h"
 #include "../AssetStore/AssetStore.h"
 #include <SDL2/SDL.h>
@@ -12,13 +12,13 @@ class RenderCursorSystem: public System {
   private:
   public:
     RenderCursorSystem() {
-      requireComponent<CursorPosComponent>();
+      requireComponent<CursorTileComponent>();
       requireComponent<SelectedTileComponent>();
     }
 
     void update(SDL_Renderer* renderer, std::unique_ptr<AssetStore>& assetStore) {
       auto entity = getSystemEntities()[0]; // singleton
-      const auto cursorPos = entity.getComponent<CursorPosComponent>();
+      const auto cursorPos = entity.getComponent<CursorTileComponent>();
       const auto selectedTile = entity.getComponent<SelectedTileComponent>();
 
       ImGuiIO& io = ImGui::GetIO();

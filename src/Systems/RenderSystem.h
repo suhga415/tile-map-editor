@@ -4,7 +4,6 @@
 #include "../ECS/ECS.h"
 #include "../Components/TransformComponent.h"
 #include "../Components/SpriteComponent.h"
-#include "../Components/CursorPosComponent.h"
 #include "../Components/SelectedTileComponent.h"
 #include "../AssetStore/AssetStore.h"
 #include <SDL2/SDL.h>

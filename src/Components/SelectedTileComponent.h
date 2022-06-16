@@ -11,8 +11,8 @@ struct SelectedTileComponent {
 
   SelectedTileComponent (
     std::string assetId = "",
-    int rowIdx = 0,
-    int colIdx = 0,
+    int rowIdx = -1,
+    int colIdx = -1,
     int tileSize = 0
   ) {
     this->assetId = assetId;

@@ -1,6 +1,7 @@
 #ifndef EDITCANVASSYSTEM_H
 #define EDITCANVASSYSTEM_H
 
+#include "../Constants.h"
 #include "../ECS/ECS.h"
 #include "../Logger/Logger.h"
 #include "../Components/CanvasComponent.h"
@@ -69,16 +70,18 @@ class EditCanvasSystem: public System {
     void onMouseDrag(MouseDragEvent& event) {
       auto entity = getSystemEntities()[0]; // singleton?
       auto canvas = entity.getComponent<CanvasComponent>();
-      auto& camera = event.camera;
-      SDL_Rect canvasRect = {canvas.locationX, canvas.locationY, canvas.tileSize * canvas.tileNumX, canvas.tileSize * canvas.tileNumY};
-      cameraPan(event.dragDist.x, event.dragDist.y, camera, canvasRect);
+      if (!canvas.filePath.empty()) { // If canvas is created/loaded, allow panning
+        auto& camera = event.camera;
+        SDL_Rect canvasRect = {canvas.locationX, canvas.locationY, canvas.tileSize * canvas.tileNumX, canvas.tileSize * canvas.tileNumY};
+        cameraPan(event.dragDist.x, event.dragDist.y, camera, canvasRect);
+      }
     }
 
     void cameraPan(int dragDistX, int dragDistY, std::shared_ptr<SDL_Rect>& camera, SDL_Rect& canvas) {
       camera->x += dragDistX;
       camera->y += dragDistY;
       // update camera x-position
-      if (camera->w >= canvas.w) { // the canvas is smaller than camera
+      if (camera->w >= canvas.w) { // if the canvas (width) is smaller than camera
         if (camera->x >= 0) {
           camera->x = 0;
         } else if (camera->x <= canvas.w - camera->w) {
@@ -92,11 +95,11 @@ class EditCanvasSystem: public System {
         }
       }
       // update camera y-position
-      if (camera->h >= canvas.h) {
+      if (camera->h - WINDOW_MENUBAR_HEIGHT >= canvas.h) { // if the canvas (height) is smaller than camera
         if (camera->y >= 0) {
           camera->y = 0;
-        } else if (camera->y <= canvas.h - camera->h) {
-          camera->y = canvas.h - camera->h;
+        } else if (camera->y <= canvas.y + canvas.h - camera->h) {
+          camera->y = canvas.y + canvas.h - camera->h;
         }
       } else {
         if (camera->y <= 0) {

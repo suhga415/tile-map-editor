@@ -3,12 +3,12 @@
 
 #include <glm/glm.hpp>
 
-struct CursorPosComponent {
+struct CursorTileComponent {
   glm::vec2 position;
   int tileSize;
   bool snap;
     
-  CursorPosComponent(
+  CursorTileComponent(
     glm::vec2 position = glm::vec2(0.0, 0.0),
     int tileSize = 0,
     bool snap = false

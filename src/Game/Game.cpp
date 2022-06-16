@@ -14,7 +14,7 @@
 #include "../Systems/GUISystem.h"
 #include "../Systems/ChangeTileSystem.h"
 #include "../Systems/EditCanvasSystem.h"
-#include "../Systems/CursorMovementSystem.h"
+#include "../Systems/CursorPropertiesSystem.h"
 #include "../Systems/RenderCursorSystem.h"
 #include "../Events/KeyPressedEvent.h"
 #include <fstream>
@@ -75,10 +75,10 @@ void Game::initialize() {
   ImGui_ImplSDLRenderer_Init(renderer);
 
   // initialize the camera view with the screen area
-  camera->x = 0;
-  camera->y = 0;
-  camera->w = WINDOW_WIDTH;
-  camera->h = WINDOW_HEIGHT - WINDOW_MENUBAR_HEIGHT;
+  camera->x = CAMERA_X;
+  camera->y = CAMERA_Y;
+  camera->w = CAMERA_WIDTH;
+  camera->h = CAMERA_HEIGHT;
   
   this->isRunning = true;
   return;
@@ -105,7 +105,7 @@ void Game::loadLevel(int level) {
   registry->addSystem<GUISystem>();
   registry->addSystem<ChangeTileSystem>();
   registry->addSystem<EditCanvasSystem>();
-  registry->addSystem<CursorMovementSystem>();
+  registry->addSystem<CursorPropertiesSystem>();
   registry->addSystem<RenderCursorSystem>();
 
   // add textures
@@ -122,12 +122,12 @@ void Game::loadLevel(int level) {
 
   // selected tile (mouse cursor)
   Entity selectedTile = registry->createEntity();
-  selectedTile.addComponent<CursorPosComponent>(glm::vec2(0, 0), 0, true);
+  selectedTile.addComponent<CursorTileComponent>(glm::vec2(0, 0), 0, true);
   selectedTile.addComponent<SelectedTileComponent>();
 
   // canvas
   Entity canvasEntity = registry->createEntity();
-  canvasEntity.addComponent<CanvasComponent>(CANVAS_X, CANVAS_Y); // 62, 20, 10, 1
+  canvasEntity.addComponent<CanvasComponent>(CANVAS_X, CANVAS_Y);
   canvasEntity.addComponent<SelectedTileComponent>();
 }
 
@@ -204,7 +204,7 @@ void Game::update() {
   // systems subscribe to events (every frame)
   eventBus->resetSubscribers();
   registry->getSystem<KeyboardControlSystem>().subscribeToEvents(eventBus);
-  registry->getSystem<CursorMovementSystem>().subscribeToEvents(eventBus);
+  registry->getSystem<CursorPropertiesSystem>().subscribeToEvents(eventBus);
   registry->getSystem<ChangeTileSystem>().subscribeToEvents(eventBus);
   registry->getSystem<EditCanvasSystem>().subscribeToEvents(eventBus);
 
@@ -213,7 +213,7 @@ void Game::update() {
 
 	// systems update
   registry->getSystem<MovementSystem>().update(deltaTime);
-  registry->getSystem<CursorMovementSystem>().update(ImGui::GetMousePos().x, ImGui::GetMousePos().y, camera);
+  registry->getSystem<CursorPropertiesSystem>().update(ImGui::GetMousePos().x, ImGui::GetMousePos().y, camera);
   // registry->getSystem<CollideSystem>().update(deltaTime);
 
 }
