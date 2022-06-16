@@ -25,6 +25,7 @@ class GUISystem: public System {
     bool showOpenCanvasWindow;
     bool showCanvasPropertiesWindow;
     bool showTileSetWindow;
+    bool showEntityWindow;
 
   public:
     GUISystem() {
@@ -34,6 +35,7 @@ class GUISystem: public System {
       showOpenCanvasWindow = false;
       showCanvasPropertiesWindow = false;
       showTileSetWindow = false;
+      showEntityWindow = false;
     }
 
     void update(SDL_Renderer* renderer, std::unique_ptr<AssetStore>& assetStore, std::shared_ptr<EventBus>& eventBus) {
@@ -50,6 +52,10 @@ class GUISystem: public System {
         }
         if (ImGui::BeginMenu("Tile Set")) {
           ImGui::MenuItem("Tile Set Window", NULL, &showTileSetWindow); ImGui::Spacing();
+          ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Entity")) {
+          ImGui::MenuItem("Entity Window", NULL, &showEntityWindow); ImGui::Spacing();
           ImGui::EndMenu();
         }
 		    ImGui::EndMainMenuBar();
@@ -69,6 +75,10 @@ class GUISystem: public System {
 
       if (showTileSetWindow) {
         renderTileSetWindow(showTileSetWindow, renderer, assetStore, eventBus);
+      }
+
+      if (showEntityWindow) {
+        renderEntityWindow(showEntityWindow, renderer, assetStore, eventBus);
       }
 
       ImGui::Render();
@@ -141,6 +151,14 @@ class GUISystem: public System {
             open = false;
           }
         }
+        ImGui::End();
+      }
+    }
+
+    void renderEntityWindow(bool& open, SDL_Renderer* renderer, std::unique_ptr<AssetStore>& assetStore, std::shared_ptr<EventBus>& eventBus) {
+      if (ImGui::Begin("Entity", NULL, ImGuiWindowFlags_HorizontalScrollbar)) {
+        // TODO
+
         ImGui::End();
       }
     }

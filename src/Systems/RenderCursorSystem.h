@@ -44,6 +44,10 @@ class RenderCursorSystem: public System {
           NULL,
           SDL_FLIP_NONE
         );
+        if (!selectedTile.assetId.empty()) {
+          SDL_SetRenderDrawColor(renderer, 200, 50, 50, 150); // Red
+          SDL_RenderDrawRect(renderer, &destinationRect);
+        }
       }
     }
 };

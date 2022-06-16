@@ -40,7 +40,7 @@ class CursorPropertiesSystem: public System {
         auto& cursorPos = entity.getComponent<CursorTileComponent>();
         int tileSize = entity.getComponent<CursorTileComponent>().tileSize;
         cursorPos.position.x = floor(float(posX + camera->x)/float(tileSize)) * tileSize - camera->x;
-        cursorPos.position.y = floor(float(posY + camera->y)/float(tileSize)) * tileSize - camera->y + WINDOW_MENUBAR_HEIGHT;
+        cursorPos.position.y = floor(float(posY - WINDOW_MENUBAR_HEIGHT + camera->y)/float(tileSize)) * tileSize - camera->y + WINDOW_MENUBAR_HEIGHT;
       }
     }
 

@@ -3,20 +3,20 @@
 
 #include <SDL2/SDL.h>
 
-const unsigned int WINDOW_WIDTH = 1400;
-const unsigned int WINDOW_HEIGHT = 850;
-const unsigned int WINDOW_MENUBAR_HEIGHT = 20;
+const int WINDOW_WIDTH = 1400;
+const int WINDOW_HEIGHT = 850;
+const int WINDOW_MENUBAR_HEIGHT = 20;
 
 const unsigned int FPS = 60;
 const unsigned int FRAME_TARGET_TIME = 1000 / FPS; // time[ms] per one frame transition
 
-const unsigned int CAMERA_X = 0;
-const unsigned int CAMERA_Y = 0; // -WINDOW_MENUBAR_HEIGHT;
-const unsigned int CAMERA_WIDTH = WINDOW_WIDTH;
-const unsigned int CAMERA_HEIGHT = WINDOW_HEIGHT; // - WINDOW_MENUBAR_HEIGHT;
+const int CAMERA_X = 0;
+const int CAMERA_Y = 0;
+const int CAMERA_WIDTH = WINDOW_WIDTH;
+const int CAMERA_HEIGHT = WINDOW_HEIGHT;
 
-const unsigned int CANVAS_X = 0;
-const unsigned int CANVAS_Y = WINDOW_MENUBAR_HEIGHT;
+const int CANVAS_X = 0;
+const int CANVAS_Y = WINDOW_MENUBAR_HEIGHT;
 
 enum CollisionType {
 	NO_COLLISION,
