@@ -114,21 +114,26 @@ class GUISystem: public System {
     void renderOpenCanvasWindow(bool& open, SDL_Renderer* renderer, std::unique_ptr<AssetStore>& assetStore, std::shared_ptr<EventBus>& eventBus) {
       // Static variables to hold input values
       static char mapFilePath[64] = "";
-
+      static char warningFileNotLoaded[64] = "";
       if (ImGui::CollapsingHeader("Open Canvas", ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::InputText("File Path", mapFilePath, 64);
         if (ImGui::Button("Open")) {
           std::string mapFilePathStr(mapFilePath);
-          mapFilePath[0] = '\0';
           // Load the file
           std::string assetId;
           int tileSize, tileNumX, tileNumY;
           float scale;
           std::vector<Tile> assignedTiles;
-          MapFileLoader::load(mapFilePathStr, assetId, tileSize, tileNumX, tileNumY, scale, assignedTiles);
-          eventBus->emitEvent<CanvasOpenedEvent>(mapFilePathStr, assetId, tileSize, tileNumX, tileNumY, scale, assignedTiles);
-          open = false;
+          bool isLoaded = MapFileLoader::load(mapFilePathStr, assetId, tileSize, tileNumX, tileNumY, scale, assignedTiles);
+          if (isLoaded) {
+            eventBus->emitEvent<CanvasOpenedEvent>(mapFilePathStr, assetId, tileSize, tileNumX, tileNumY, scale, assignedTiles);
+            mapFilePath[0] = '\0';
+            open = false;
+          } else {
+            strncpy(warningFileNotLoaded, "File not found! Check the file path and try again.", sizeof(warningFileNotLoaded));
+          }
         }
+        ImGui::Text("%s", warningFileNotLoaded);
       }
     }
 

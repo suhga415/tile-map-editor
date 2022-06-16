@@ -12,10 +12,12 @@
 
 class MapFileLoader {
   public:
-    static void load(std::string filePath, std::string &assetId, int &tileSize, int &tileNumX, int &tileNumY, float &scale, std::vector<Tile> &assignedTiles) {
-      std::ifstream mapFile;
+    static bool load(std::string filePath, std::string &assetId, int &tileSize, int &tileNumX, int &tileNumY, float &scale, std::vector<Tile> &assignedTiles) {
       std::string line;
-      mapFile.open(filePath);
+      std::ifstream mapFile(filePath);
+      if (!mapFile) {
+        return false;
+      }
       std::getline(mapFile, line);
       std::vector<std::string> words = MapFileLoader::split(line, ' ');
       assetId = words[0];
@@ -33,6 +35,7 @@ class MapFileLoader {
         }
       }
       mapFile.close();
+      return true;
     }
 
   private:
