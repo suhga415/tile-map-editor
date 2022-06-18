@@ -3,8 +3,8 @@
 
 #include <SDL2/SDL.h>
 
-const int WINDOW_WIDTH = 1400;
-const int WINDOW_HEIGHT = 850;
+const int WINDOW_WIDTH = 800;
+const int WINDOW_HEIGHT = 500;
 const int WINDOW_MENUBAR_HEIGHT = 20;
 
 const unsigned int FPS = 60;

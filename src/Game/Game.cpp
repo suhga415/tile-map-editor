@@ -112,9 +112,6 @@ void Game::loadLevel(int level) {
   // add textures
   assetStore->addTexture(renderer, "tank-image", "./assets/images/tank-panther-right.png");
   assetStore->addTexture(renderer, "truck-image", "./assets/images/truck-ford-right.png");
-  // Some textures for tile map
-  // ./assets/tilemaps/field.png
-  // ./assets/tilemaps/jungle.png
 
   // tileset GUI (palette)
   Entity gui = registry->createEntity();
