@@ -8,6 +8,7 @@
 #include "../Components/SelectedTileComponent.h"
 #include "../Components/CanvasComponent.h"
 #include "../Components/LoadedTileSetsComponent.h"
+#include "../Components/LoadedTexturesComponent.h"
 #include "../Systems/MovementSystem.h"
 #include "../Systems/RenderSystem.h"
 #include "../Systems/KeyboardControlSystem.h"
@@ -119,6 +120,8 @@ void Game::loadLevel(int level) {
   Entity gui = registry->createEntity();
   gui.addComponent<TileSetComponent>(); // "tilemap-image", 32, 10, 3, 1.5
   gui.addComponent<LoadedTileSetsComponent>();
+  gui.addComponent<LoadedTexturesComponent>();
+  // registry->getSystem<GUISystem>().loadItemTextures(renderer, assetStore);
 
   // selected tile (mouse cursor)
   Entity selectedTile = registry->createEntity();

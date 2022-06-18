@@ -4,6 +4,7 @@
 #include "../ECS/ECS.h"
 #include "../Components/TileSetComponent.h"
 #include "../Components/LoadedTileSetsComponent.h"
+#include "../Components/LoadedTexturesComponent.h"
 #include "../EventBus/EventBus.h"
 #include "../Events/SelectedTileChangedEvent.h"
 #include "../Events/TileSetChangedEvent.h"
@@ -12,12 +13,21 @@
 #include "../Events/CanvasPropertiesChangedEvent.h"
 #include "../Utilities/MapFileLoader.h"
 #include "../Structs/Tile.h"
+#include "../Structs/Texture.h"
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_sdl.h>
 #include <imgui/imgui_impl_sdlrenderer.h>
 #include <SDL2/SDL.h>
 #include <string>
 #include <vector>
+
+struct TextureData {
+    std::string name;
+    std::string filePath;
+    int width;
+    int height;
+    float scale;
+};
 
 class GUISystem: public System {
   private:
@@ -31,11 +41,32 @@ class GUISystem: public System {
     GUISystem() {
       requireComponent<TileSetComponent>();
       requireComponent<LoadedTileSetsComponent>();
+      requireComponent<LoadedTexturesComponent>();
       showNewCanvasWindow = false;
       showOpenCanvasWindow = false;
       showCanvasPropertiesWindow = false;
       showTileSetWindow = false;
       showEntityWindow = false;
+    }
+
+    void loadItemTextures(SDL_Renderer* renderer, std::unique_ptr<AssetStore>& assetStore) {
+      Logger::Info("got called 0 ");
+      auto entity = getSystemEntities()[0]; // singleton?
+      Logger::Info("got called 1 ");
+      auto& loadedTextures = entity.getComponent<LoadedTexturesComponent>().textures;
+      Logger::Info("got called 2 ");
+      TextureData data[] = {
+        {"catsle", "../assets/objects/1.png", 30, 29, 3.0},
+        {"rook", "../assets/objects/2.png", 14, 21, 3.0},
+        {"house", "../assets/objects/3.png", 12, 13, 3.0},
+        {"spring", "../assets/objects/12.png", 16, 16, 3.0},
+        {"tree", "../assets/objects/6.png", 14, 14, 3.0}
+      };
+      for (int i = 0; i < 5; i++) {
+        Texture* newTexture = new Texture(data[i].width, data[i].height, data[i].scale);
+        loadedTextures.emplace(data[i].name, newTexture);
+        assetStore->addTexture(renderer, data[i].name, data[i].filePath);
+      }
     }
 
     void update(SDL_Renderer* renderer, std::unique_ptr<AssetStore>& assetStore, std::shared_ptr<EventBus>& eventBus) {
@@ -128,6 +159,7 @@ class GUISystem: public System {
           if (isLoaded) {
             eventBus->emitEvent<CanvasOpenedEvent>(mapFilePathStr, assetId, tileSize, tileNumX, tileNumY, scale, assignedTiles);
             mapFilePath[0] = '\0';
+            warningFileNotLoaded[0] = '\0';
             open = false;
           } else {
             strncpy(warningFileNotLoaded, "File not found! Check the file path and try again.", sizeof(warningFileNotLoaded));
@@ -161,9 +193,35 @@ class GUISystem: public System {
     }
 
     void renderEntityWindow(bool& open, SDL_Renderer* renderer, std::unique_ptr<AssetStore>& assetStore, std::shared_ptr<EventBus>& eventBus) {
-      if (ImGui::Begin("Entity", NULL, ImGuiWindowFlags_HorizontalScrollbar)) {
-        // TODO
+      auto entity = getSystemEntities()[0]; // singleton?
+      auto& loadedTextures = entity.getComponent<LoadedTexturesComponent>().textures;
 
+      if (ImGui::Begin("Entity", NULL, ImGuiWindowFlags_HorizontalScrollbar)) {
+        // Static variables to hold input values
+        static int selectedSpriteIndex = 0;
+        std::vector<std::string> spritesV = {};
+        for (auto it = loadedTextures.begin(); it != loadedTextures.end(); ++it) {
+          spritesV.push_back(it->first);
+        }
+        const char* sprites[spritesV.size()];
+        for (int i = 0; i < spritesV.size(); i++) {
+          sprites[i] = const_cast<char*>(spritesV[i].c_str());
+        }
+
+        // Section to select textxure (entity)
+        if (ImGui::CollapsingHeader("Select Texture for Entity", ImGuiTreeNodeFlags_DefaultOpen)) {
+          ImGui::Combo("Sprite", &selectedSpriteIndex, sprites, IM_ARRAYSIZE(sprites));
+          if (ImGui::Button("Load")) {
+            std::string textureIdStr(sprites[selectedSpriteIndex]);
+            Texture selectedTexture(
+              loadedTextures[textureIdStr]->width,
+              loadedTextures[textureIdStr]->height,
+              loadedTextures[textureIdStr]->scale
+            );
+            // TODO: emit event TextureChangedEvent
+          }
+        }
+        // TODO: Section to add new texture (for entity)
         ImGui::End();
       }
     }

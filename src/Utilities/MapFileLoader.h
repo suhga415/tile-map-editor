@@ -20,6 +20,7 @@ class MapFileLoader {
       }
       std::getline(mapFile, line);
       std::vector<std::string> words = MapFileLoader::split(line, ' ');
+      // TODO: Fail gracefully when the format is wrong
       assetId = words[0];
       tileSize = std::stoi(words[1]);
       tileNumX = std::stoi(words[2]);
